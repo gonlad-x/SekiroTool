@@ -36,6 +36,7 @@ public class EnemyViewModel : BaseViewModel
         TriggerDragonFinalAttackCommand = new DelegateCommand(TriggerFinalDragonAttack);
         SkipGeni3Command = new DelegateCommand(SkipGeni3);
         SkipTowerGeniCommand = new DelegateCommand(SkipTowerArmoredGeni);
+        SetEmmaSkipCommand = new DelegateCommand(EmmaSkip);
     }
 
     
@@ -47,6 +48,8 @@ public class EnemyViewModel : BaseViewModel
     public ICommand SkipGeni3Command { get; set; }
     
     public ICommand SkipTowerGeniCommand { get; set; }
+    
+    public ICommand SetEmmaSkipCommand { get; set; }
     
     #endregion
 
@@ -277,6 +280,9 @@ public class EnemyViewModel : BaseViewModel
             if (!AreOptionsEnabled) return;
             SkipGeni3();
         });
+        
+        _hotkeyManager.RegisterAction(HotkeyActions.EmmaSkip, () => EmmaSkip(true));
+        
         _hotkeyManager.RegisterAction(HotkeyActions.Geni2Skip, () =>
         {
             if (!AreOptionsEnabled) return;
@@ -343,6 +349,16 @@ public class EnemyViewModel : BaseViewModel
         nint chrIns = _chrInsService.GetChrInsByEntityId(TowerGeniEntityId);
         _chrInsService.SetHpNode(chrIns, 0);
     }
+    
+    private void EmmaSkip(object parameter)
+    {
+        bool isOn = _eventService.GetEvent(GameEvent.EmmaFightFlag);
+        if (isOn)
+        {
+            _eventService.SetEvent(GameEvent.EmmaSkip, true);
+        }
+    }
+    
     
     #endregion
 }

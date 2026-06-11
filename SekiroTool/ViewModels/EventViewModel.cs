@@ -49,7 +49,7 @@ public class EventViewModel : BaseViewModel
         SetInvasionCommand = new DelegateCommand(SetInvasion);
         SetAshinaNightCommand = new DelegateCommand(SetAshinaNight);
         SetHeadlessApeCommand = new DelegateCommand(SetHeadlessApe);
-        SetEmmaSkipCommand = new DelegateCommand(EmmaSkip);
+        
     }
     
     #region Commands
@@ -69,7 +69,7 @@ public class EventViewModel : BaseViewModel
     public ICommand SetAshinaNightCommand { get; set; }
     public ICommand SetHeadlessApeCommand { get; set; }
     
-    public ICommand SetEmmaSkipCommand { get; set; }
+    
 
     #endregion
 
@@ -282,7 +282,7 @@ public class EventViewModel : BaseViewModel
 
     private void RegisterHotkeys()
     {
-        _hotkeyManager.RegisterAction(HotkeyActions.EmmaSkip, () => EmmaSkip(true));
+        
     }
     
     private void OnGameLoaded()
@@ -514,14 +514,7 @@ public class EventViewModel : BaseViewModel
     private void SetHeadlessApe(object parameter)=> 
         _eventService.SetEvent(GameEvent.HeadlessApe, Convert.ToBoolean(parameter));
 
-    private void EmmaSkip(object parameter)
-    {
-        bool isOn = _eventService.GetEvent(GameEvent.EmmaFightFlag);
-        if (isOn)
-        {
-            _eventService.SetEvent(GameEvent.EmmaSkip, true);
-        }
-    }
+    
     
    
     #endregion

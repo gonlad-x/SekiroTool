@@ -103,7 +103,7 @@ public class SettingsViewModel : BaseViewModel
         
         EventHotkeys =
         [
-            new("Skip Emma", HotkeyActions.EmmaSkip)
+            
         ];
 
         TargetHotkeys =
@@ -135,7 +135,8 @@ public class SettingsViewModel : BaseViewModel
         BossSkipHotkeys =
         [
             new("Skip Geni 3", HotkeyActions.Geni3Skip),
-            new("Skip Geni 2 (Armor)", HotkeyActions.Geni2Skip)
+            new("Skip Geni 2 (Armor)", HotkeyActions.Geni2Skip),
+            new("Skip Emma", HotkeyActions.EmmaSkip)
         ];
             
         
