@@ -1,8 +1,9 @@
-﻿
-using System.Reflection;
-using System.Windows;
+using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -10,6 +11,8 @@ namespace SekiroTool.Utilities
 {
     public static class VersionChecker
     {
+        private const string Repo = "gonlad-x/SekiroTool";
+
         public static async Task<(bool hasUpdate, Version currentVersion, Version webVersion)> CheckForUpdate()
         {
             try
@@ -22,7 +25,7 @@ namespace SekiroTool.Utilities
                     new ProductInfoHeaderValue("SekiroTool", currentVersion.ToString()));
 
                 var response = await client.GetStringAsync(
-                    "https://api.github.com/repos/borgCode/SekiroTool/releases/latest");
+                    $"https://api.github.com/repos/{Repo}/releases/latest");
 
                 int tagIndex = response.IndexOf("\"tag_name\":", StringComparison.OrdinalIgnoreCase);
                 if (tagIndex == -1) return (false, currentVersion, null);
@@ -36,7 +39,7 @@ namespace SekiroTool.Utilities
 
                 return (webVersion > currentVersion, currentVersion, webVersion);
             }
-            catch (Exception ex)
+            catch
             {
                 return (false, null, null);
             }
@@ -45,7 +48,7 @@ namespace SekiroTool.Utilities
         public static async void CheckForUpdates(Window parentWindow, bool showNoUpdateMessage = false)
         {
             var (hasUpdate, currentVersion, webVersion) = await CheckForUpdate();
-    
+
             if (!hasUpdate || webVersion == null || currentVersion == null)
             {
                 if (showNoUpdateMessage)
@@ -58,7 +61,7 @@ namespace SekiroTool.Utilities
                 }
                 return;
             }
-            
+
             var updateWindow = new Window
             {
                 Title = "Update Available",
@@ -101,7 +104,7 @@ namespace SekiroTool.Utilities
             };
             Grid.SetRow(message, 1);
             grid.Children.Add(message);
-            
+
             var dontShowCheckbox = new CheckBox
             {
                 Content = "Don't show on app launch",
@@ -114,7 +117,6 @@ namespace SekiroTool.Utilities
             Grid.SetRow(dontShowCheckbox, 1);
             grid.Children.Add(dontShowCheckbox);
 
-            
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -122,24 +124,55 @@ namespace SekiroTool.Utilities
                 Margin = new Thickness(0, 10, 0, 0)
             };
 
-            var downloadButton = new Button
+            var updateButton = new Button
             {
-                Content = "Download",
+                Content = "Update",
                 Width = 80,
                 Height = 25,
                 Margin = new Thickness(5)
             };
-            downloadButton.Click += (s, e) => 
+
+            updateButton.Click += async (s, e) =>
             {
+                updateButton.IsEnabled = false;
+                updateButton.Content = "Downloading...";
                 SettingsManager.Default.EnableUpdateChecks = dontShowCheckbox.IsChecked != true;
                 SettingsManager.Default.Save();
-                
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+
+                try
                 {
-                    FileName = "https://github.com/borgCode/SekiroTool/releases/latest",
-                    UseShellExecute = true
-                });
-                updateWindow.Close();
+                    var exePath = Process.GetCurrentProcess().MainModule!.FileName;
+                    var dir = Path.GetDirectoryName(exePath)!;
+                    var updatePath = Path.Combine(dir, "SekiroTool_update.exe");
+
+                    var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true });
+                    client.DefaultRequestHeaders.UserAgent.Add(
+                        new ProductInfoHeaderValue("SekiroTool", currentVersion.ToString()));
+                    var bytes = await client.GetByteArrayAsync(
+                        $"https://github.com/{Repo}/releases/latest/download/SekiroTool.exe");
+                    File.WriteAllBytes(updatePath, bytes);
+
+                    var batPath = Path.Combine(dir, "SekiroTool_update.bat");
+                    File.WriteAllText(batPath,
+                        $"@echo off\r\ntimeout /t 2 /nobreak >nul\r\nmove /y \"{updatePath}\" \"{exePath}\"\r\nstart \"\" \"{exePath}\"\r\ndel \"%~f0\"");
+
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c \"{batPath}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    });
+
+                    Application.Current.Shutdown();
+                }
+                catch (Exception ex)
+                {
+                    updateButton.IsEnabled = true;
+                    updateButton.Content = "Update";
+                    MessageBox.Show($"Update failed: {ex.Message}", "Update Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             };
 
             var laterButton = new Button
@@ -149,24 +182,21 @@ namespace SekiroTool.Utilities
                 Height = 25,
                 Margin = new Thickness(5)
             };
-            
-            laterButton.Click += (s, e) => 
+
+            laterButton.Click += (s, e) =>
             {
                 SettingsManager.Default.EnableUpdateChecks = dontShowCheckbox.IsChecked != true;
                 SettingsManager.Default.Save();
-
                 updateWindow.Close();
             };
 
-            buttonPanel.Children.Add(downloadButton);
+            buttonPanel.Children.Add(updateButton);
             buttonPanel.Children.Add(laterButton);
             grid.Children.Add(buttonPanel);
             Grid.SetRow(buttonPanel, 2);
 
             updateWindow.Content = grid;
-
             titleBar.MouseLeftButtonDown += (s, e) => updateWindow.DragMove();
-
             updateWindow.ShowDialog();
         }
 
@@ -174,9 +204,7 @@ namespace SekiroTool.Utilities
         {
             var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
             if (currentVersion != null)
-            {
                 appVersion.Text = $"v{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
-            }
         }
     }
 }
