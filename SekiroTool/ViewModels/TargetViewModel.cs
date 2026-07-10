@@ -735,8 +735,6 @@ public class TargetViewModel : BaseViewModel
             Console.WriteLine($@"Target Info: handle: {TargetHandle} characterId: {TargetCharacterId} entityId: {TargetEntityId} enemyIns: {(long)targetAddr:X}");
 #endif
 
-            TargetMaxPoise = _targetService.GetMaxPoise();
-            StaggerThreshold = (float)Math.Round(TargetMaxPoise / 24f, 1);
             TargetMaxPoison = _targetService.GetMaxPoison();
             TargetMaxBurn = _targetService.GetMaxBurn();
             TargetMaxShock = _targetService.GetMaxShock();
@@ -754,6 +752,12 @@ public class TargetViewModel : BaseViewModel
 
         TargetMaxHealth = _targetService.GetMaxHp();
         TargetMaxPosture = _targetService.GetMaxPosture();
+        var newMaxPoise = _targetService.GetMaxPoise();
+        if (Math.Abs(newMaxPoise - TargetMaxPoise) > 0.01f)
+        {
+            TargetMaxPoise = newMaxPoise;
+            StaggerThreshold = (float)Math.Round(TargetMaxPoise / 24f, 1);
+        }
         TargetCurrentHealth = _targetService.GetCurrentHp();
         TargetCurrentPosture = _targetService.GetCurrentPosture();
         CheckPhaseTransition(TargetCurrentHealth, TargetMaxHealth);
