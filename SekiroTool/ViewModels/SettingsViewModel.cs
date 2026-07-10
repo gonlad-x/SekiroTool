@@ -131,6 +131,8 @@ public class SettingsViewModel : BaseViewModel
             new("Target No Posture Buildup", HotkeyActions.TargetNoPostureBuildup),
             new("Target No Death", HotkeyActions.TargetNoDeath),
             new("Target Targeting View", HotkeyActions.TargetTargetingView),
+            new("Toggle Target Overlay", HotkeyActions.ToggleTargetOverlay),
+            new("Reset Hit Count", HotkeyActions.ResetHitCount),
         ];
         BossSkipHotkeys =
         [

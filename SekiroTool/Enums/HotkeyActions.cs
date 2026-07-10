@@ -67,6 +67,8 @@ public enum HotkeyActions
     TargetNoPostureBuildup,
     TargetNoDeath,
     TargetTargetingView,
+    ToggleTargetOverlay,
+    ResetHitCount,
     Quitout,
     
     ToggleGameSpeed,

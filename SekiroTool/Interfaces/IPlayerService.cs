@@ -47,5 +47,4 @@ public interface IPlayerService
     void ApplySpecialEffect(int spEffectId);
     void ToggleDamageMultiplier(bool isEnabled);
     void SetDamageMultiplier(double multiplier);
-
 }

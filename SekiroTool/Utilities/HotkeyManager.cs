@@ -35,6 +35,12 @@ public class HotkeyManager
     {
         _actions[actionId.ToString()] = action;
     }
+
+    public void TriggerAction(string actionId)
+    {
+        if (_actions.TryGetValue(actionId, out var action))
+            action.Invoke();
+    }
     
     
     private void KeyboardHook_Down(object sender, KeyboardEventArgs e)

@@ -73,6 +73,18 @@ public class TargetViewModel : BaseViewModel
     private bool _isNoPostureBuildupEnabled;
     private bool _isTargetViewEnabled;
 
+    private string _targetHandle = "-";
+    private string _targetCharacterId = "-";
+    private string _targetEntityId = "-";
+
+    private float _hitCount = 0f;
+    private float _staggerThreshold = 0f;
+    private float _prevPoiseForHits = -1f;
+    private float _prevHpFraction = -1f;
+    private float _prevPoiseTimer = -1f;
+
+    private bool _isOverlayOpen;
+
     public TargetViewModel(IStateService stateService, HotkeyManager hotkeyManager,
         ITargetService targetService, IDebugDrawService debugDrawService)
     {
@@ -93,6 +105,12 @@ public class TargetViewModel : BaseViewModel
         SetPosturePercentageCommand = new DelegateCommand(SetPosturePercentage);
         SetCustomPostureCommand = new DelegateCommand(SetCustomPosture);
 
+        ResetHitCountCommand = new DelegateCommand(ResetHitCount);
+
+        _hotkeyManager.RegisterAction(HotkeyActions.ToggleTargetOverlay,
+            () => IsOverlayOpen = !IsOverlayOpen);
+        _hotkeyManager.RegisterAction(HotkeyActions.ResetHitCount, ResetHitCount);
+
         _targetTick = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(64)
@@ -109,6 +127,8 @@ public class TargetViewModel : BaseViewModel
     public ICommand SetPostureCommand { get; set; }
     public ICommand SetPosturePercentageCommand { get; set; }
     public ICommand SetCustomPostureCommand { get; set; }
+
+    public ICommand ResetHitCountCommand { get; }
 
     #endregion
 
@@ -506,6 +526,42 @@ public class TargetViewModel : BaseViewModel
         }
     }
 
+    public string TargetHandle
+    {
+        get => _targetHandle;
+        set => SetProperty(ref _targetHandle, value);
+    }
+
+    public string TargetCharacterId
+    {
+        get => _targetCharacterId;
+        set => SetProperty(ref _targetCharacterId, value);
+    }
+
+    public string TargetEntityId
+    {
+        get => _targetEntityId;
+        set => SetProperty(ref _targetEntityId, value);
+    }
+
+    public float HitCount
+    {
+        get => _hitCount;
+        private set => SetProperty(ref _hitCount, value);
+    }
+
+    public float StaggerThreshold
+    {
+        get => _staggerThreshold;
+        private set => SetProperty(ref _staggerThreshold, value);
+    }
+
+    public bool IsOverlayOpen
+    {
+        get => _isOverlayOpen;
+        set => SetProperty(ref _isOverlayOpen, value);
+    }
+
     #endregion
 
     #region Private Methods
@@ -605,6 +661,53 @@ public class TargetViewModel : BaseViewModel
 
     private bool EnsureValidTarget() => IsValidTarget || IsTargetValid();
 
+    private void ResetHitCount()
+    {
+        HitCount = 0f;
+        _prevPoiseForHits = -1f;
+        _prevHpFraction = -1f;
+        _prevPoiseTimer = -1f;
+    }
+
+    private void CheckPhaseTransition(int currentHp, int maxHp)
+    {
+        if (maxHp <= 0) return;
+        float fraction = (float)currentHp / maxHp;
+        if (_prevHpFraction >= 0f && _prevHpFraction < 0.99f && fraction >= 0.99f)
+            ResetHitCount();
+        else
+            _prevHpFraction = fraction;
+    }
+
+    private void UpdateHitCounter(float currentPoise, float maxPoise)
+    {
+        if (_prevPoiseForHits < 0)
+        {
+            _prevPoiseForHits = currentPoise;
+            return;
+        }
+
+        float drop = _prevPoiseForHits - currentPoise;
+        _prevPoiseForHits = currentPoise;
+
+        if (drop < 0)
+        {
+            if (-drop > maxPoise * 0.3f)
+                HitCount = 0f;
+            return;
+        }
+
+        if (drop < 6f) return; // noise filter
+
+        // R1=24, Jump R1=12, Thrust=48 — midpoints at 18 and 36
+        if (drop < 18f)
+            HitCount += 0.5f;
+        else if (drop < 36f)
+            HitCount += 1f;
+        else
+            HitCount += 2f;
+    }
+
     private void TargetTick(object? sender, EventArgs e)
     {
         if (!IsTargetValid())
@@ -623,16 +726,17 @@ public class TargetViewModel : BaseViewModel
         {
             _currentTargetAddr = targetAddr;
 
+            TargetHandle = _targetService.GetTargetHandle().ToString("X");
+            TargetCharacterId = _targetService.GetCharacterId().ToString();
+            TargetEntityId = _targetService.GetEntityId().ToString();
+            ResetHitCount();
+
 #if DEBUG
-
-            uint handle = _targetService.GetTargetHandle();
-            uint characterId = _targetService.GetCharacterId();
-            int entityId = _targetService.GetEntityId();
-            Console.WriteLine($@"Target Info: handle: {handle:X} characterId: {characterId} entityId: {entityId} enemyIns: {(long)targetAddr:X}");
-
+            Console.WriteLine($@"Target Info: handle: {TargetHandle} characterId: {TargetCharacterId} entityId: {TargetEntityId} enemyIns: {(long)targetAddr:X}");
 #endif
 
             TargetMaxPoise = _targetService.GetMaxPoise();
+            StaggerThreshold = (float)Math.Round(TargetMaxPoise / 24f, 1);
             TargetMaxPoison = _targetService.GetMaxPoison();
             TargetMaxBurn = _targetService.GetMaxBurn();
             TargetMaxShock = _targetService.GetMaxShock();
@@ -652,8 +756,13 @@ public class TargetViewModel : BaseViewModel
         TargetMaxPosture = _targetService.GetMaxPosture();
         TargetCurrentHealth = _targetService.GetCurrentHp();
         TargetCurrentPosture = _targetService.GetCurrentPosture();
+        CheckPhaseTransition(TargetCurrentHealth, TargetMaxHealth);
         TargetCurrentPoise = _targetService.GetCurrentPoise();
         TargetPoiseTimer = _targetService.GetPoiseTimer();
+        if (_prevPoiseTimer > 0f && TargetPoiseTimer == 0f)
+            ResetHitCount();
+        _prevPoiseTimer = TargetPoiseTimer;
+        UpdateHitCounter(TargetCurrentPoise, TargetMaxPoise);
         TargetCurrentPoison = _targetService.GetCurrentPoison();
         TargetCurrentBurn = _targetService.GetCurrentBurn();
         TargetCurrentShock = _targetService.GetCurrentShock();

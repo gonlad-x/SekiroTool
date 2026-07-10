@@ -79,6 +79,7 @@ public partial class MainWindow : Window
         ItemViewModel itemViewModel = new ItemViewModel(itemService, _stateService);
         EventViewModel eventViewModel =
             new EventViewModel(eventService, _stateService, debugDrawService, itemService, _hotkeyManager);
+        StartupViewModel startupViewModel = new StartupViewModel(_hotkeyManager, _stateService);
         SettingsViewModel settingsViewModel = new SettingsViewModel(settingsService, _stateService, _hotkeyManager);
 
         var playerTab = new PlayerTab(playerViewModel);
@@ -88,6 +89,7 @@ public partial class MainWindow : Window
         var utilityTab = new UtilityTab(utilityViewModel);
         var itemTab = new ItemTab(itemViewModel);
         var eventTab = new EventTab(eventViewModel);
+        var startupTab = new StartupTab(startupViewModel);
         var settingsTab = new SettingsTab(settingsViewModel);
 
         MainTabControl.Items.Add(new TabItem { Header = "Player", Content = playerTab });
@@ -97,6 +99,7 @@ public partial class MainWindow : Window
         MainTabControl.Items.Add(new TabItem { Header = "Utility", Content = utilityTab });
         MainTabControl.Items.Add(new TabItem { Header = "Items", Content = itemTab });
         MainTabControl.Items.Add(new TabItem { Header = "Event", Content = eventTab });
+        MainTabControl.Items.Add(new TabItem { Header = "Startup", Content = startupTab });
         MainTabControl.Items.Add(new TabItem { Header = "Settings", Content = settingsTab });
 
         MainTabControl.SelectionChanged += MainTabControl_SelectionChanged;

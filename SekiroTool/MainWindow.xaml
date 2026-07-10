@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="SekiroTool"
         Height="700"
-        Width="520"
+        Width="555"
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
         BorderBrush="{StaticResource BorderBrush}"
@@ -126,6 +126,11 @@
                     Background="Transparent"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                    <Setter Property="Padding" Value="6,3" />
+                </Style>
+            </TabControl.ItemContainerStyle>
             <TabControl.Template>
                 <ControlTemplate TargetType="TabControl">
                     <DockPanel>

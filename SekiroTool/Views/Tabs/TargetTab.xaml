@@ -34,6 +34,15 @@
 
                 <StackPanel Visibility="{Binding IsTargetOptionsEnabled, Converter={StaticResource BoolToVis}}">
 
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                        <TextBlock Text="Handle: " Foreground="#888" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetHandle}" Foreground="Gold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <TextBlock Text="Char ID: " Foreground="#888" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetCharacterId}" Foreground="Gold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <TextBlock Text="Entity ID: " Foreground="#888" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetEntityId}" Foreground="Gold" VerticalAlignment="Center" />
+                    </StackPanel>
+
                     <Grid HorizontalAlignment="Stretch">
                         <TextBlock HorizontalAlignment="Center" Margin="0,0,0,5">
                             <Run Text="Health: " />
@@ -279,27 +288,24 @@
                         <TextBlock Grid.Row="0" Text="Show:" Margin="0,0,0,5" />
 
                         <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
-                            <!-- <CheckBox Content="Pop out Resistances" -->
-                            <!--           IsEnabled="{Binding IsTargetOptionsEnabled}" -->
-                            <!--           IsChecked="{Binding IsResistancesWindowOpen}" -->
-                            <!--           Margin="0,2" /> -->
-                            <!-- -->
-                            <!-- <Border -->
-                            <!--     Background="#3498db" -->
-                            <!--     CornerRadius="10" -->
-                            <!--     Width="12" -->
-                            <!--     Height="12" -->
-                            <!--     Margin="5,0,0,0" -->
-                            <!--     VerticalAlignment="Center" -->
-                            <!--     ToolTip="Will only stay on top of game in windowed mode" -->
-                            <!--     ToolTipService.InitialShowDelay='100'> -->
-                            <!--     <TextBlock Text="i" -->
-                            <!--                Foreground="White" -->
-                            <!--                HorizontalAlignment="Center" -->
-                            <!--                VerticalAlignment="Center" -->
-                            <!--                FontWeight="Bold" -->
-                            <!--                FontSize="10" /> -->
-                            <!-- </Border> -->
+                            <CheckBox Content="Pop out overlay"
+                                      IsChecked="{Binding IsOverlayOpen}"
+                                      Margin="0,2"
+                                      VerticalAlignment="Center" />
+                            <Border Background="#3498db"
+                                    CornerRadius="10"
+                                    Width="12" Height="12"
+                                    Margin="5,0,0,0"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Will only stay on top of game in windowed mode"
+                                    ToolTipService.InitialShowDelay="100">
+                                <TextBlock Text="i"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontWeight="Bold"
+                                           FontSize="10" />
+                            </Border>
                         </StackPanel>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -570,9 +576,29 @@
                                        FontSize="10" />
                         </Border>
                     </StackPanel>
-                    
-                    
-                    
+
+                    <StackPanel Orientation="Horizontal" Margin="10,8,0,0">
+                        <TextBlock Text="Nb of hits: " VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding HitCount, StringFormat={}{0:F1}, Mode=OneWay}"
+                                   Foreground="Gold" FontWeight="SemiBold" Width="28"
+                                   TextAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Text=" / " VerticalAlignment="Center" Foreground="#888" />
+                        <TextBlock Text="{Binding StaggerThreshold, StringFormat={}{0:F1}, Mode=OneWay}"
+                                   Foreground="#888" Width="28"
+                                   TextAlignment="Left" VerticalAlignment="Center" />
+                        <Button Content="↺" Margin="8,0,0,0"
+                                Command="{Binding ResetHitCountCommand}"
+                                Width="20" Height="18" FontSize="12"
+                                ToolTip="Reset hit count">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{StaticResource BooleanAndConverter}">
+                                    <Binding Path="AreOptionsEnabled" />
+                                    <Binding Path="IsValidTarget" />
+                                </MultiBinding>
+                            </Button.IsEnabled>
+                        </Button>
+                    </StackPanel>
+
                     <Grid Margin="0,10,0,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
