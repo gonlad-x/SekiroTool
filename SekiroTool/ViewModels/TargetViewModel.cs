@@ -79,9 +79,6 @@ public class TargetViewModel : BaseViewModel
 
     private float _hitCount = 0f;
     private float _staggerThreshold = 0f;
-    private float _prevPoiseForHits = -1f;
-    private float _prevHpFraction = -1f;
-    private float _prevPoiseTimer = -1f;
 
     private bool _isOverlayOpen;
 
@@ -664,48 +661,6 @@ public class TargetViewModel : BaseViewModel
     private void ResetHitCount()
     {
         HitCount = 0f;
-        _prevPoiseForHits = -1f;
-        _prevHpFraction = -1f;
-        _prevPoiseTimer = -1f;
-    }
-
-    private void CheckPhaseTransition(int currentHp, int maxHp)
-    {
-        if (maxHp <= 0) return;
-        float fraction = (float)currentHp / maxHp;
-        if (_prevHpFraction >= 0f && _prevHpFraction < 0.99f && fraction >= 0.99f)
-            ResetHitCount();
-        else
-            _prevHpFraction = fraction;
-    }
-
-    private void UpdateHitCounter(float currentPoise, float maxPoise)
-    {
-        if (_prevPoiseForHits < 0)
-        {
-            _prevPoiseForHits = currentPoise;
-            return;
-        }
-
-        float drop = _prevPoiseForHits - currentPoise;
-        _prevPoiseForHits = currentPoise;
-
-        if (drop < 0)
-        {
-            if (-drop > maxPoise * 0.3f)
-                HitCount = 0f;
-            return;
-        }
-
-        if (drop < 6f) return; // noise filter
-
-        // R1=24, Jump R1=12, Thrust=48 — midpoints at 18 and 36
-        if (drop < 18f)
-            HitCount += 0.5f;
-        else if (drop < 36f)
-            HitCount += 1f;
-        else
-            HitCount += 2f;
     }
 
     private void TargetTick(object? sender, EventArgs e)
@@ -760,13 +715,9 @@ public class TargetViewModel : BaseViewModel
         }
         TargetCurrentHealth = _targetService.GetCurrentHp();
         TargetCurrentPosture = _targetService.GetCurrentPosture();
-        CheckPhaseTransition(TargetCurrentHealth, TargetMaxHealth);
         TargetCurrentPoise = _targetService.GetCurrentPoise();
         TargetPoiseTimer = _targetService.GetPoiseTimer();
-        if (_prevPoiseTimer > 0f && TargetPoiseTimer == 0f)
-            ResetHitCount();
-        _prevPoiseTimer = TargetPoiseTimer;
-        UpdateHitCounter(TargetCurrentPoise, TargetMaxPoise);
+        HitCount = TargetMaxPoise > 0f ? Math.Max(0f, (TargetMaxPoise - TargetCurrentPoise) / 24f) : 0f;
         TargetCurrentPoison = _targetService.GetCurrentPoison();
         TargetCurrentBurn = _targetService.GetCurrentBurn();
         TargetCurrentShock = _targetService.GetCurrentShock();
