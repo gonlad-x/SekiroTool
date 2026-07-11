@@ -29,6 +29,8 @@ public class SettingsManager
     [DefaultValue(true)] public bool TargetOverlayShowDetails { get; set; }
     [DefaultValue(1.0)] public double TargetOverlayScaleX { get; set; }
     [DefaultValue(0.85)] public double TargetOverlayOpacity { get; set; }
+    public double TargetOverlayLeft { get; set; } = double.NaN;
+    public double TargetOverlayTop { get; set; } = double.NaN;
     
     
     

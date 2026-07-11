@@ -36,9 +36,18 @@ public partial class TargetOverlayWindow : Window
 
         ContentRendered += (_, _) =>
         {
-            var area = SystemParameters.WorkArea;
-            Left = area.Right - ActualWidth - 10;
-            Top = area.Top + 10;
+            if (!double.IsNaN(SettingsManager.Default.TargetOverlayLeft) &&
+                !double.IsNaN(SettingsManager.Default.TargetOverlayTop))
+            {
+                Left = SettingsManager.Default.TargetOverlayLeft;
+                Top = SettingsManager.Default.TargetOverlayTop;
+            }
+            else
+            {
+                var area = SystemParameters.WorkArea;
+                Left = area.Right - ActualWidth - 10;
+                Top = area.Top + 10;
+            }
         };
     }
 
@@ -88,6 +97,8 @@ public partial class TargetOverlayWindow : Window
 
         SettingsManager.Default.TargetOverlayScaleX = _scaleMultiplier;
         SettingsManager.Default.TargetOverlayOpacity = _backgroundOpacity;
+        SettingsManager.Default.TargetOverlayLeft = Left;
+        SettingsManager.Default.TargetOverlayTop = Top;
         SettingsManager.Default.Save();
     }
 }
