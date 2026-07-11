@@ -8,15 +8,20 @@ namespace SekiroTool.ViewModels;
 public class StartupViewModel : BaseViewModel
 {
     private readonly HotkeyManager _hotkeyManager;
+    private readonly Dictionary<string, StartupOptionViewModel> _gameLoadOptions;
+    private readonly Dictionary<string, StartupOptionViewModel> _newGameOptions;
     private readonly Dictionary<string, StartupOptionViewModel> _lookup;
     private bool _startupApplied;
-    private bool _isApplyOnNewGameEnabled;
 
+    // Activate on Game Load
     public ObservableCollection<StartupOptionViewModel> PlayerOptions { get; }
     public ObservableCollection<StartupOptionViewModel> EnemiesOptions { get; }
     public ObservableCollection<StartupOptionViewModel> TargetOptions { get; }
-    public ObservableCollection<StartupOptionViewModel> EventOptions { get; }
     public ObservableCollection<StartupOptionViewModel> BossSkipOptions { get; }
+
+    // Activate on New Game Cycle
+    public ObservableCollection<StartupOptionViewModel> NewGamePlayerOptions { get; }
+    public ObservableCollection<StartupOptionViewModel> EventOptions { get; }
 
     public StartupViewModel(HotkeyManager hotkeyManager, IStateService stateService)
     {
@@ -24,7 +29,6 @@ public class StartupViewModel : BaseViewModel
 
         PlayerOptions =
         [
-            new("Max HP", HotkeyActions.SetMaxHp),
             new("Apply Confetti", HotkeyActions.ApplyConfetti),
             new("Apply Gachiin", HotkeyActions.ApplyGachiin),
             new("Remove Confetti", HotkeyActions.RemoveConfetti),
@@ -59,6 +63,19 @@ public class StartupViewModel : BaseViewModel
             new("Pop Out Overlay", HotkeyActions.ToggleTargetOverlay),
         ];
 
+        BossSkipOptions =
+        [
+            new("Skip Geni 3", HotkeyActions.Geni3Skip),
+            new("Skip Geni 2 (Armor)", HotkeyActions.Geni2Skip),
+            new("Skip Emma", HotkeyActions.EmmaSkip),
+        ];
+
+        NewGamePlayerOptions =
+        [
+            new("Max HP", HotkeyActions.SetMaxHp),
+            new("Auto Set NG+7", HotkeyActions.SetNewGame7),
+        ];
+
         EventOptions =
         [
             new("Demon Bell On", HotkeyActions.DemonBellOn),
@@ -67,19 +84,19 @@ public class StartupViewModel : BaseViewModel
             new("No Kuro's Charm Off", HotkeyActions.NoKurosCharmOff),
         ];
 
-        BossSkipOptions =
-        [
-            new("Skip Geni 3", HotkeyActions.Geni3Skip),
-            new("Skip Geni 2 (Armor)", HotkeyActions.Geni2Skip),
-            new("Skip Emma", HotkeyActions.EmmaSkip),
-        ];
-
-        _lookup = PlayerOptions
+        _gameLoadOptions = PlayerOptions
             .Concat(EnemiesOptions)
             .Concat(TargetOptions)
-            .Concat(EventOptions)
             .Concat(BossSkipOptions)
             .ToDictionary(o => o.ActionId);
+
+        _newGameOptions = NewGamePlayerOptions
+            .Concat(EventOptions)
+            .ToDictionary(o => o.ActionId);
+
+        _lookup = _gameLoadOptions
+            .Concat(_newGameOptions)
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         foreach (var option in _lookup.Values)
             option.PropertyChanged += (_, e) =>
@@ -88,12 +105,11 @@ public class StartupViewModel : BaseViewModel
                 {
                     Save();
                     OnPropertyChanged(nameof(Summary));
+                    OnPropertyChanged(nameof(NewGameSummary));
                 }
             };
 
         Load();
-
-        _isApplyOnNewGameEnabled = SettingsManager.Default.StartupApplyOnNewGame;
 
         stateService.Subscribe(State.Loaded, OnGameLoaded);
         stateService.Subscribe(State.GameStart, OnGameStart);
@@ -104,21 +120,17 @@ public class StartupViewModel : BaseViewModel
     {
         get
         {
-            var enabled = _lookup.Values.Where(o => o.IsEnabled).Select(o => o.DisplayName).ToList();
+            var enabled = _gameLoadOptions.Values.Where(o => o.IsEnabled).Select(o => o.DisplayName).ToList();
             return enabled.Count == 0 ? "None" : string.Join(", ", enabled);
         }
     }
 
-    public bool IsApplyOnNewGameEnabled
+    public string NewGameSummary
     {
-        get => _isApplyOnNewGameEnabled;
-        set
+        get
         {
-            if (SetProperty(ref _isApplyOnNewGameEnabled, value))
-            {
-                SettingsManager.Default.StartupApplyOnNewGame = value;
-                SettingsManager.Default.Save();
-            }
+            var enabled = _newGameOptions.Values.Where(o => o.IsEnabled).Select(o => o.DisplayName).ToList();
+            return enabled.Count == 0 ? "None" : string.Join(", ", enabled);
         }
     }
 
@@ -126,13 +138,15 @@ public class StartupViewModel : BaseViewModel
     {
         if (_startupApplied) return;
         _startupApplied = true;
-        foreach (var option in _lookup.Values.Where(o => o.IsEnabled))
+        foreach (var option in _gameLoadOptions.Values.Where(o => o.IsEnabled))
             _hotkeyManager.TriggerStartupAction(option.ActionId);
     }
 
     private void OnGameStart()
     {
-        if (!IsApplyOnNewGameEnabled) return;
+        // Also silently reasserts enabled "Activate on Game Load" options whose
+        // underlying effect lives in per-character memory (e.g. No Damage) and
+        // would otherwise be lost when a New Game allocates a fresh character.
         foreach (var option in _lookup.Values.Where(o => o.IsEnabled))
             _hotkeyManager.TriggerNewGameAction(option.ActionId);
     }

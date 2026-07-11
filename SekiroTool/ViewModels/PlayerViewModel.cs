@@ -39,7 +39,6 @@ public class PlayerViewModel : BaseViewModel
 
         stateService.Subscribe(State.Loaded, OnGameLoaded);
         stateService.Subscribe(State.NotLoaded, OnGameNotLoaded);
-        stateService.Subscribe(State.GameStart, OnGameStart);
 
         SavePositionCommand = new DelegateCommand(SavePosition);
         RestorePositionCommand = new DelegateCommand(RestorePosition);
@@ -373,14 +372,6 @@ public class PlayerViewModel : BaseViewModel
         }
     }
 
-    private bool _isAutoSetNewGameSevenEnabled;
-    
-    public bool IsAutoSetNewGameSevenEnabled
-    {
-        get => _isAutoSetNewGameSevenEnabled;
-        set => SetProperty(ref _isAutoSetNewGameSevenEnabled, value);
-    }
-
     private int _currentHealth;
 
     public int CurrentHealth
@@ -601,6 +592,16 @@ public class PlayerViewModel : BaseViewModel
         _hotkeyManager.RegisterStartupAction(HotkeyActions.NoDeath, () => IsNoDeathEnabled = true);
         _hotkeyManager.RegisterStartupAction(HotkeyActions.NoDeathExKillbox, () => IsNoDeathEnabledWithoutKillbox = true);
         _hotkeyManager.RegisterStartupAction(HotkeyActions.ToggleDamageMultiplier, () => IsDamageMultiplierEnabled = true);
+
+        // No Damage is stored as a bit flag on the player's ChrData, which gets
+        // reallocated on a New Game, so the idempotent "ensure enabled" above won't
+        // rewrite it if the toggle was already on. Force a fresh write here instead.
+        _hotkeyManager.RegisterNewGameAction(HotkeyActions.NoDamage, () =>
+        {
+            if (IsNoDamageEnabled) _playerService.TogglePlayerNoDamage(true);
+        });
+
+        _hotkeyManager.RegisterNewGameAction(HotkeyActions.SetNewGame7, SetNewGame7OnNewGame);
     }
     
     
@@ -659,13 +660,6 @@ public class PlayerViewModel : BaseViewModel
         _playerTick.Stop();
     }
     
-    private void OnGameStart()
-    {
-        if (!IsAutoSetNewGameSevenEnabled) return;
-        _playerService.SetNewGame(7);
-        NewGame = _playerService.GetNewGame();
-    }
-
     private void PlayerTick(object? sender, EventArgs e)
     {
         if (_pauseUpdates) return;
@@ -710,25 +704,37 @@ public class PlayerViewModel : BaseViewModel
         if (maxHp > 0) _playerService.SetHp(maxHp);
     }
 
-    private const int NewGameStartingHp = 32;
-
-    // On a fresh New Game, the engine (re)writes its own starting HP pool (32)
-    // shortly after the player spawns, stomping an immediate apply back down.
-    // Wait for that reset to actually happen, then apply Max HP once after it,
-    // instead of racing it.
+    // Max HP is already correct (e.g. 320) the moment a fresh character spawns on
+    // a New Game - Sekiro's own intro sequence is what forces CurrentHp down to a
+    // fraction of that (the "near-death" opening), shortly after spawn. Wait for
+    // that reduction to actually land (CurrentHp < MaxHp, both valid) instead of
+    // guessing a fixed HP value or racing the intro script, then heal to max once.
     private void SetMaxHpOnNewGame()
     {
         Task.Run(async () =>
         {
             for (var i = 0; i < 60; i++)
             {
-                if (_playerService.GetCurrentHp() == NewGameStartingHp) break;
+                var maxHp = _playerService.GetMaxHp();
+                var currentHp = _playerService.GetCurrentHp();
+                if (maxHp > 0 && currentHp > 0 && currentHp < maxHp)
+                {
+                    _playerService.SetHp(maxHp);
+                    return;
+                }
+
                 await Task.Delay(250);
             }
 
-            var maxHp = _playerService.GetMaxHp();
-            if (maxHp > 0) _playerService.SetHp(maxHp);
+            var fallbackMaxHp = _playerService.GetMaxHp();
+            if (fallbackMaxHp > 0) _playerService.SetHp(fallbackMaxHp);
         });
+    }
+
+    private void SetNewGame7OnNewGame()
+    {
+        _playerService.SetNewGame(7);
+        NewGame = _playerService.GetNewGame();
     }
 
     private void SetMaxPosture()

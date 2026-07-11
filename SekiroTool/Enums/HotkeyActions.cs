@@ -87,5 +87,7 @@ public enum HotkeyActions
     DemonBellOn,
     DemonBellOff,
     NoKurosCharmOn,
-    NoKurosCharmOff
+    NoKurosCharmOff,
+
+    SetNewGame7
 }

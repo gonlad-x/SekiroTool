@@ -12,7 +12,6 @@ public class SettingsManager
     
     public string HotkeyActionIds { get; set; } = "";
     public string StartupActionIds { get; set; } = "";
-    public bool StartupApplyOnNewGame { get; set; }
     public bool EnableHotkeys { get; set; }
     public bool NoLogo { get; set; }
     public bool AlwaysOnTop { get; set; }

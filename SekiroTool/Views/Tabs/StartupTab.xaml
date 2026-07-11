@@ -18,97 +18,127 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Border BorderThickness="1" BorderBrush="#333" CornerRadius="3" Margin="5">
-        <StackPanel Margin="10">
-            <TextBlock Text="Activate on Game Load" FontWeight="Bold" Margin="0,0,0,5" />
-            <TextBlock Text="Checked options are activated when launching SekiroTool."
-                       Foreground="#888" FontSize="11" Margin="0,0,0,10" TextWrapping="Wrap" />
+    <StackPanel Margin="5">
+        <Border BorderThickness="1" BorderBrush="#333" CornerRadius="3" Margin="0,0,0,10">
+            <StackPanel Margin="10">
+                <TextBlock Text="Activate on Game Load" FontWeight="Bold" Margin="0,0,0,5" />
+                <TextBlock Text="Checked options are activated once, when the game and/or SekiroTool are opened."
+                           Foreground="#888" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap" />
 
-            <CheckBox IsChecked="{Binding IsApplyOnNewGameEnabled}"
-                      Content="Also apply when starting a New Game"
-                      ToolTip="Re-applies the checked options whenever a New Game is started, even if the game and SekiroTool are already running."
-                      Margin="0,0,0,8" />
+                <Border Background="#1A1A1A" BorderBrush="#333" BorderThickness="1" CornerRadius="3"
+                        Padding="8,6" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="Active on game load:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                        <TextBlock Text="{Binding Summary}" TextWrapping="Wrap"
+                                   Foreground="#AAAAAA" FontSize="11" />
+                    </StackPanel>
+                </Border>
 
-            <Border Background="#1A1A1A" BorderBrush="#333" BorderThickness="1" CornerRadius="3"
-                    Padding="8,6" Margin="0,0,0,8">
-                <StackPanel>
-                    <TextBlock Text="Active on startup:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
-                    <TextBlock Text="{Binding Summary}" TextWrapping="Wrap"
-                               Foreground="#AAAAAA" FontSize="11" />
-                </StackPanel>
-            </Border>
+                <TabControl Margin="0,5,0,0">
+                    <TabItem Header="Player">
+                        <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding PlayerOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
 
-            <TabControl Margin="0,5,0,0">
-                <TabItem Header="Player">
-                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding PlayerOptions}"
-                                      Padding="5"
-                                      ItemTemplate="{StaticResource StartupItemTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </TabItem>
+                    <TabItem Header="Enemies">
+                        <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding EnemiesOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
 
-                <TabItem Header="Enemies">
-                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding EnemiesOptions}"
-                                      Padding="5"
-                                      ItemTemplate="{StaticResource StartupItemTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </TabItem>
+                    <TabItem Header="Target">
+                        <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding TargetOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
 
-                <TabItem Header="Target">
-                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding TargetOptions}"
-                                      Padding="5"
-                                      ItemTemplate="{StaticResource StartupItemTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </TabItem>
+                    <TabItem Header="Boss Skips">
+                        <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding BossSkipOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
+            </StackPanel>
+        </Border>
 
-                <TabItem Header="Event">
-                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding EventOptions}"
-                                      Padding="5"
-                                      ItemTemplate="{StaticResource StartupItemTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </TabItem>
+        <Border BorderThickness="1" BorderBrush="#333" CornerRadius="3">
+            <StackPanel Margin="10">
+                <TextBlock Text="Activate on New Game Cycle" FontWeight="Bold" Margin="0,0,0,5" />
+                <TextBlock Text="Checked options are (re)activated every time a New Game is started, even if the game and SekiroTool are already running."
+                           Foreground="#888" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap" />
 
-                <TabItem Header="Boss Skips">
-                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding BossSkipOptions}"
-                                      Padding="5"
-                                      ItemTemplate="{StaticResource StartupItemTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </TabItem>
-            </TabControl>
-        </StackPanel>
-    </Border>
+                <Border Background="#1A1A1A" BorderBrush="#333" BorderThickness="1" CornerRadius="3"
+                        Padding="8,6" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="Active on New Game:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                        <TextBlock Text="{Binding NewGameSummary}" TextWrapping="Wrap"
+                                   Foreground="#AAAAAA" FontSize="11" />
+                    </StackPanel>
+                </Border>
+
+                <TabControl Margin="0,5,0,0">
+                    <TabItem Header="Player">
+                        <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding NewGamePlayerOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <TabItem Header="Event">
+                        <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding EventOptions}"
+                                          Padding="5"
+                                          ItemTemplate="{StaticResource StartupItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
 </UserControl>
