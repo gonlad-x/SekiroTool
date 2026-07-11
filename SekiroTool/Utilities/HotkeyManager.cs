@@ -10,6 +10,8 @@ public class HotkeyManager
     private readonly LowLevelKeyboardHook _keyboardHook = new();
     private readonly Dictionary<string, Keys> _hotkeyMappings = new();
     private readonly Dictionary<string, Action> _actions = new();
+    private readonly Dictionary<string, Action> _startupActions = new();
+    private readonly Dictionary<string, Action> _newGameActions = new();
 
     public HotkeyManager(IMemoryService memoryService)
     {
@@ -41,8 +43,43 @@ public class HotkeyManager
         if (_actions.TryGetValue(actionId, out var action))
             action.Invoke();
     }
-    
-    
+
+    // Some actions registered via RegisterAction are toggles (flip current state),
+    // which is correct for a manually-pressed hotkey but unsafe to call more than
+    // once (e.g. applying startup options on both game load and a later New Game).
+    // Register an idempotent "ensure enabled" variant here for those; actions with
+    // no dedicated startup variant fall back to the regular toggle action.
+    public void RegisterStartupAction(HotkeyActions actionId, Action action)
+    {
+        _startupActions[actionId.ToString()] = action;
+    }
+
+    public void TriggerStartupAction(string actionId)
+    {
+        if (_startupActions.TryGetValue(actionId, out var startupAction))
+            startupAction.Invoke();
+        else
+            TriggerAction(actionId);
+    }
+
+    // A small number of actions need different handling specifically when a New
+    // Game is detected (e.g. Max HP needs to wait out the engine's own starting-HP
+    // reset instead of applying immediately). Actions without a dedicated New Game
+    // variant fall back to the regular startup action.
+    public void RegisterNewGameAction(HotkeyActions actionId, Action action)
+    {
+        _newGameActions[actionId.ToString()] = action;
+    }
+
+    public void TriggerNewGameAction(string actionId)
+    {
+        if (_newGameActions.TryGetValue(actionId, out var newGameAction))
+            newGameAction.Invoke();
+        else
+            TriggerStartupAction(actionId);
+    }
+
+
     private void KeyboardHook_Down(object sender, KeyboardEventArgs e)
     {
         if (!IsGameFocused())

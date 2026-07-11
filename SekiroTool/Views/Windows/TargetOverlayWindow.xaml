@@ -9,70 +9,102 @@
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize"
-        SizeToContent="Height"
-        Width="230"
+        SizeToContent="WidthAndHeight"
         Topmost="True">
 
-    <Border Background="#1E1E1E"
-            BorderBrush="#444"
-            BorderThickness="1"
-            CornerRadius="4"
-            Margin="6">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.6" />
-        </Border.Effect>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
-        <StackPanel>
-            <Border Background="#2A2A2A"
-                    CornerRadius="3,3,0,0"
-                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <Grid>
-                    <TextBlock Text="Target Overlay"
-                               Foreground="#BBBBBB"
-                               FontSize="11"
-                               VerticalAlignment="Center"
-                               Margin="8,5" />
+        <Style x:Key="OverlayIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#888" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="1,0,0,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#CCC" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OverlayCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource OverlayIconButtonStyle}">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="FontSize" Value="8" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#C93D3D" />
+                    <Setter Property="Foreground" Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.LayoutTransform>
+            <ScaleTransform x:Name="ContentScale" ScaleX="1" ScaleY="1" />
+        </Grid.LayoutTransform>
+
+        <Border x:Name="MainBorder"
+                Background="#1E1E1E"
+                BorderBrush="#444"
+                BorderThickness="1"
+                CornerRadius="2"
+                Margin="6">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.6" />
+            </Border.Effect>
+
+            <StackPanel Margin="4,6,4,10">
+                <DockPanel LastChildFill="False" Margin="0,0,0,6">
                     <Button Content="✕"
-                            HorizontalAlignment="Right"
+                            DockPanel.Dock="Right"
                             VerticalAlignment="Center"
-                            Width="22" Height="22"
-                            Margin="0,0,4,0"
-                            FontSize="10"
-                            Cursor="Hand"
                             Click="Close_Click"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Foreground="#888">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="Foreground" Value="#888" />
-                                <Setter Property="Cursor" Value="Hand" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="2">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#C93D3D" />
-                                        <Setter Property="Foreground" Value="White" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </Grid>
-            </Border>
+                            Cursor="Hand"
+                            Style="{StaticResource OverlayCloseButtonStyle}" />
 
-            <StackPanel Margin="10,8,10,10">
-                <Grid Margin="0,0,0,5">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal"
+                                DockPanel.Dock="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,4,0">
+                        <Button Content="☰"
+                                Click="ToggleDetailedView_Click"
+                                ToolTip="Toggle Detailed View"
+                                Style="{StaticResource OverlayIconButtonStyle}" />
+                        <Button Content="◐"
+                                Click="CycleOpacity_Click"
+                                ToolTip="Opacity"
+                                Style="{StaticResource OverlayIconButtonStyle}" />
+                        <Button Content="+"
+                                FontSize="14"
+                                Click="IncreaseSize_Click"
+                                ToolTip="Increase size"
+                                Style="{StaticResource OverlayIconButtonStyle}" />
+                        <Button Content="−"
+                                FontSize="14"
+                                Click="DecreaseSize_Click"
+                                ToolTip="Decrease size"
+                                Style="{StaticResource OverlayIconButtonStyle}" />
+                    </StackPanel>
+                </DockPanel>
+
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5"
+                                Visibility="{Binding HasValidPoise, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="Nb of hits: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding HitCount, StringFormat={}{0:F1}, Mode=OneWay}"
                                    Foreground="Gold" FontSize="16" FontWeight="SemiBold"
@@ -82,87 +114,77 @@
                                    Foreground="#888" FontSize="14"
                                    MinWidth="32" TextAlignment="Left" VerticalAlignment="Center" />
                     </StackPanel>
-                    <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Command="{Binding ResetHitCountCommand}"
-                            Width="20" Height="20"
-                            ToolTip="Reset hit count">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="Foreground" Value="#666" />
-                                <Setter Property="Cursor" Value="Hand" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="2">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Foreground" Value="#CCC" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                        <TextBlock Text="↺" FontSize="13" />
-                    </Button>
-                </Grid>
 
-                <ProgressBar Height="20"
-                             Value="{Binding TargetCurrentPoise, Mode=OneWay}"
-                             Maximum="{Binding TargetMaxPoise, FallbackValue=100}">
-                    <ProgressBar.Template>
-                        <ControlTemplate TargetType="ProgressBar">
-                            <Border BorderBrush="#444" BorderThickness="1" Background="#222" CornerRadius="3">
-                                <Grid x:Name="PART_Track">
-                                    <Rectangle x:Name="PART_Indicator"
-                                               Fill="#4CAF50"
-                                               HorizontalAlignment="Left"
-                                               RadiusX="2" RadiusY="2"
-                                               Margin="1" />
-                                    <TextBlock HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               Foreground="White"
-                                               FontSize="13">
-                                        <Run Text="{Binding TargetCurrentPoise, StringFormat={}{0:F1}, Mode=OneWay}" />
-                                        <Run Text="/" />
-                                        <Run Text="{Binding TargetMaxPoise, StringFormat={}{0:F1}, Mode=OneWay}" />
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                        </ControlTemplate>
-                    </ProgressBar.Template>
-                </ProgressBar>
+                    <StackPanel Margin="0,0,0,5"
+                                Visibility="{Binding HasValidPoise, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Visibility="{Binding IsOverlayDetailedViewEnabled, Converter={StaticResource BoolToVis}}">
+                            <ProgressBar Height="20"
+                                         MinWidth="230"
+                                         Value="{Binding TargetCurrentPoise, Mode=OneWay}"
+                                         Maximum="{Binding TargetMaxPoise, FallbackValue=100}">
+                                <ProgressBar.Template>
+                                    <ControlTemplate TargetType="ProgressBar">
+                                        <Border BorderBrush="#444" BorderThickness="1" Background="#222" CornerRadius="3">
+                                            <Grid x:Name="PART_Track">
+                                                <Rectangle x:Name="PART_Indicator"
+                                                           Fill="#4CAF50"
+                                                           HorizontalAlignment="Left"
+                                                           RadiusX="2" RadiusY="2"
+                                                           Margin="1" />
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="White"
+                                                           FontSize="13">
+                                                    <Run Text="{Binding TargetCurrentPoise, StringFormat={}{0:F1}, Mode=OneWay}" />
+                                                    <Run Text="/" />
+                                                    <Run Text="{Binding TargetMaxPoise, StringFormat={}{0:F1}, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ProgressBar.Template>
+                            </ProgressBar>
 
-                <TextBlock Text="{Binding TargetPoiseTimer, StringFormat={}Poise timer: {0:F1}s, Mode=OneWay}"
-                           Foreground="#AAAAAA"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           Margin="0,3,0,8" />
+                            <TextBlock Text="{Binding TargetPoiseTimer, StringFormat={}Poise timer: {0:F1}s, Mode=OneWay}"
+                                       Foreground="#AAAAAA"
+                                       FontSize="13"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,3,0,0" />
+                        </StackPanel>
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="Act: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding LastAct, Mode=OneWay}"
-                               Foreground="Gold"
-                               FontSize="14"
-                               Width="24"
-                               TextAlignment="Right"
-                               VerticalAlignment="Center"
-                               Margin="0,0,14,0" />
-                    <TextBlock Text="Kengeki: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding LastKengekiAct, Mode=OneWay}"
-                               Foreground="Gold"
-                               FontSize="14"
-                               Width="24"
-                               TextAlignment="Right"
-                               VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                        <TextBlock Text="HP: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetHealthPercentage, StringFormat={}{0:F1}%, Mode=OneWay}"
+                                   Foreground="Gold" FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Text="Posture: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetPosturePercentage, StringFormat={}{0:F1}%, Mode=OneWay}"
+                                   Foreground="Gold" FontSize="14"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                Visibility="{Binding IsOverlayDetailedViewEnabled, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Act: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LastAct, Mode=OneWay}"
+                                   Foreground="Gold"
+                                   FontSize="14"
+                                   Width="24"
+                                   TextAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,14,0" />
+                        <TextBlock Text="Kengeki: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LastKengekiAct, Mode=OneWay}"
+                                   Foreground="Gold"
+                                   FontSize="14"
+                                   Width="24"
+                                   TextAlignment="Right"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
                 </StackPanel>
-
             </StackPanel>
-        </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </Window>

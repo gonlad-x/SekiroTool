@@ -82,6 +82,10 @@ public enum HotkeyActions
     
     EmmaSkip,
     Geni3Skip,
-    Geni2Skip
-    
+    Geni2Skip,
+
+    DemonBellOn,
+    DemonBellOff,
+    NoKurosCharmOn,
+    NoKurosCharmOff
 }

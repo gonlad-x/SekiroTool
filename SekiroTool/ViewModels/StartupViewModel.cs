@@ -10,11 +10,12 @@ public class StartupViewModel : BaseViewModel
     private readonly HotkeyManager _hotkeyManager;
     private readonly Dictionary<string, StartupOptionViewModel> _lookup;
     private bool _startupApplied;
+    private bool _isApplyOnNewGameEnabled;
 
     public ObservableCollection<StartupOptionViewModel> PlayerOptions { get; }
     public ObservableCollection<StartupOptionViewModel> EnemiesOptions { get; }
     public ObservableCollection<StartupOptionViewModel> TargetOptions { get; }
-    public ObservableCollection<StartupOptionViewModel> UtilityOptions { get; }
+    public ObservableCollection<StartupOptionViewModel> EventOptions { get; }
     public ObservableCollection<StartupOptionViewModel> BossSkipOptions { get; }
 
     public StartupViewModel(HotkeyManager hotkeyManager, IStateService stateService)
@@ -23,10 +24,7 @@ public class StartupViewModel : BaseViewModel
 
         PlayerOptions =
         [
-            new("Save Position 1", HotkeyActions.SavePos1),
-            new("Save Position 2", HotkeyActions.SavePos2),
-            new("Restore Position 1", HotkeyActions.RestorePos1),
-            new("Restore Position 2", HotkeyActions.RestorePos2),
+            new("Max HP", HotkeyActions.SetMaxHp),
             new("Apply Confetti", HotkeyActions.ApplyConfetti),
             new("Apply Gachiin", HotkeyActions.ApplyGachiin),
             new("Remove Confetti", HotkeyActions.RemoveConfetti),
@@ -41,9 +39,6 @@ public class StartupViewModel : BaseViewModel
             new("Infinite Poise", HotkeyActions.InfinitePoise),
             new("No Death", HotkeyActions.NoDeath),
             new("No Death (Yes Killbox)", HotkeyActions.NoDeathExKillbox),
-            new("Increase Player Speed", HotkeyActions.IncreasePlayerSpeed),
-            new("Decrease Player Speed", HotkeyActions.DecreasePlayerSpeed),
-            new("Toggle Player Speed", HotkeyActions.TogglePlayerSpeed),
             new("No Damage", HotkeyActions.NoDamage),
             new("Increase Damage Multiplier", HotkeyActions.IncreaseDamageMultiplier),
             new("Decrease Damage Multiplier", HotkeyActions.DecreaseDamageMultiplier),
@@ -56,56 +51,20 @@ public class StartupViewModel : BaseViewModel
             new("Trigger Dragon Final Attack", HotkeyActions.TriggerDragonFinalAttack),
             new("No Butterfly Summons", HotkeyActions.NoButterflySummons),
             new("Snake Intro Loop", HotkeyActions.SnakeIntroLoop),
-            new("All No Death", HotkeyActions.AllNoDeath),
-            new("All No Damage", HotkeyActions.AllNoDamage),
-            new("All No Hit", HotkeyActions.AllNoHit),
-            new("All No Attack", HotkeyActions.AllNoAttack),
-            new("All No Move", HotkeyActions.AllNoMove),
-            new("All Disable AI", HotkeyActions.AllDisableAi),
-            new("All No Posture Buildup", HotkeyActions.AllNoPostureBuildup),
-            new("All Targeting View", HotkeyActions.AllTargetingView),
         ];
 
         TargetOptions =
         [
             new("Enable Target Options", HotkeyActions.EnableTargetOptions),
-            new("Freeze Target HP", HotkeyActions.FreezeTargetHp),
-            new("Set Target One HP", HotkeyActions.SetTargetOneHp),
-            new("Target Custom HP", HotkeyActions.TargetCustomHp),
-            new("Freeze Target Posture", HotkeyActions.FreezeTargetPosture),
-            new("Set Target One Posture", HotkeyActions.SetTargetOnePosture),
-            new("Target Custom Posture", HotkeyActions.TargetCustomPosture),
-            new("Show All Resistances", HotkeyActions.ShowAllResistances),
-            new("Repeat Act", HotkeyActions.RepeatAct),
-            new("Repeat Kengeki Act", HotkeyActions.RepeatKengekiAct),
-            new("Increment Force Act", HotkeyActions.IncrementForceAct),
-            new("Decrement Force Act", HotkeyActions.DecrementForceAct),
-            new("Increment Force Kengeki Act", HotkeyActions.IncrementForceKengekiAct),
-            new("Decrement Force Kengeki Act", HotkeyActions.DecrementForceKengekiAct),
-            new("Increase Target Speed", HotkeyActions.IncreaseTargetSpeed),
-            new("Decrease Target Speed", HotkeyActions.DecreaseTargetSpeed),
-            new("Toggle Target Speed", HotkeyActions.ToggleTargetSpeed),
-            new("Freeze Target AI", HotkeyActions.FreezeTargetAi),
-            new("No Attack Target AI", HotkeyActions.NoAttackTargetAi),
-            new("No Move Target AI", HotkeyActions.NoMoveTargetAi),
-            new("Target No Posture Buildup", HotkeyActions.TargetNoPostureBuildup),
-            new("Target No Death", HotkeyActions.TargetNoDeath),
-            new("Target Targeting View", HotkeyActions.TargetTargetingView),
-            new("Toggle Target Overlay", HotkeyActions.ToggleTargetOverlay),
-            new("Reset Hit Count", HotkeyActions.ResetHitCount),
+            new("Pop Out Overlay", HotkeyActions.ToggleTargetOverlay),
         ];
 
-        UtilityOptions =
+        EventOptions =
         [
-            new("Quitout", HotkeyActions.Quitout),
-            new("Toggle Game Speed", HotkeyActions.ToggleGameSpeed),
-            new("Increase Game Speed", HotkeyActions.IncreaseGameSpeed),
-            new("Decrease Game Speed", HotkeyActions.DecreaseGameSpeed),
-            new("No Clip", HotkeyActions.NoClip),
-            new("Increase No Clip Speed", HotkeyActions.IncreaseNoClipSpeed),
-            new("Decrease No Clip Speed", HotkeyActions.DecreaseNoClipSpeed),
-            new("Free Cam", HotkeyActions.FreeCam),
-            new("Move Cam To Player", HotkeyActions.MoveCamToPlayer),
+            new("Demon Bell On", HotkeyActions.DemonBellOn),
+            new("Demon Bell Off", HotkeyActions.DemonBellOff),
+            new("No Kuro's Charm On", HotkeyActions.NoKurosCharmOn),
+            new("No Kuro's Charm Off", HotkeyActions.NoKurosCharmOff),
         ];
 
         BossSkipOptions =
@@ -118,7 +77,7 @@ public class StartupViewModel : BaseViewModel
         _lookup = PlayerOptions
             .Concat(EnemiesOptions)
             .Concat(TargetOptions)
-            .Concat(UtilityOptions)
+            .Concat(EventOptions)
             .Concat(BossSkipOptions)
             .ToDictionary(o => o.ActionId);
 
@@ -134,7 +93,10 @@ public class StartupViewModel : BaseViewModel
 
         Load();
 
+        _isApplyOnNewGameEnabled = SettingsManager.Default.StartupApplyOnNewGame;
+
         stateService.Subscribe(State.Loaded, OnGameLoaded);
+        stateService.Subscribe(State.GameStart, OnGameStart);
         stateService.Subscribe(State.Detached, () => _startupApplied = false);
     }
 
@@ -147,12 +109,32 @@ public class StartupViewModel : BaseViewModel
         }
     }
 
+    public bool IsApplyOnNewGameEnabled
+    {
+        get => _isApplyOnNewGameEnabled;
+        set
+        {
+            if (SetProperty(ref _isApplyOnNewGameEnabled, value))
+            {
+                SettingsManager.Default.StartupApplyOnNewGame = value;
+                SettingsManager.Default.Save();
+            }
+        }
+    }
+
     private void OnGameLoaded()
     {
         if (_startupApplied) return;
         _startupApplied = true;
         foreach (var option in _lookup.Values.Where(o => o.IsEnabled))
-            _hotkeyManager.TriggerAction(option.ActionId);
+            _hotkeyManager.TriggerStartupAction(option.ActionId);
+    }
+
+    private void OnGameStart()
+    {
+        if (!IsApplyOnNewGameEnabled) return;
+        foreach (var option in _lookup.Values.Where(o => o.IsEnabled))
+            _hotkeyManager.TriggerNewGameAction(option.ActionId);
     }
 
     private void Save()

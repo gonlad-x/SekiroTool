@@ -290,9 +290,13 @@ public class EnemyViewModel : BaseViewModel
         });
         _hotkeyManager.RegisterAction(HotkeyActions.NoButterflySummons,
             () => { IsNoButterflySummonsEnabled = !IsNoButterflySummonsEnabled; });
-        
-        _hotkeyManager.RegisterAction(HotkeyActions.SnakeIntroLoop, 
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoButterflySummons,
+            () => IsNoButterflySummonsEnabled = true);
+
+        _hotkeyManager.RegisterAction(HotkeyActions.SnakeIntroLoop,
             () => { IsSnakeIntroLoopEnabled = !IsSnakeIntroLoopEnabled; });
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.SnakeIntroLoop,
+            () => IsSnakeIntroLoopEnabled = true);
         
         _hotkeyManager.RegisterAction(HotkeyActions.AllNoDeath, () => { IsNoDeathEnabled = !IsNoDeathEnabled; });
         _hotkeyManager.RegisterAction(HotkeyActions.AllNoDamage, () => { IsNoDamageEnabled = !IsNoDamageEnabled; });

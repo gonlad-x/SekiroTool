@@ -72,7 +72,7 @@ public partial class MainWindow : Window
         EnemyViewModel enemyViewModel = new EnemyViewModel(enemyService, _hotkeyManager, _stateService,
             debugDrawService, eventService, chrInsService);
         TargetViewModel targetViewModel =
-            new TargetViewModel(_stateService, _hotkeyManager, targetService, debugDrawService);
+            new TargetViewModel(_stateService, _hotkeyManager, targetService, debugDrawService, _playerService);
         UtilityViewModel utilityViewModel =
             new UtilityViewModel(utilityService, _stateService, _hotkeyManager, debugDrawService, playerViewModel,
                 ezStateService);

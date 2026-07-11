@@ -282,7 +282,10 @@ public class EventViewModel : BaseViewModel
 
     private void RegisterHotkeys()
     {
-        
+        _hotkeyManager.RegisterAction(HotkeyActions.DemonBellOn, () => SetDemonBell(true));
+        _hotkeyManager.RegisterAction(HotkeyActions.DemonBellOff, () => SetDemonBell(false));
+        _hotkeyManager.RegisterAction(HotkeyActions.NoKurosCharmOn, () => SetNoKurosCharm(true));
+        _hotkeyManager.RegisterAction(HotkeyActions.NoKurosCharmOff, () => SetNoKurosCharm(false));
     }
     
     private void OnGameLoaded()

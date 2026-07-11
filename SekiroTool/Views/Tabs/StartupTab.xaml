@@ -24,6 +24,11 @@
             <TextBlock Text="Checked options are activated when launching SekiroTool."
                        Foreground="#888" FontSize="11" Margin="0,0,0,10" TextWrapping="Wrap" />
 
+            <CheckBox IsChecked="{Binding IsApplyOnNewGameEnabled}"
+                      Content="Also apply when starting a New Game"
+                      ToolTip="Re-applies the checked options whenever a New Game is started, even if the game and SekiroTool are already running."
+                      Margin="0,0,0,8" />
+
             <Border Background="#1A1A1A" BorderBrush="#333" BorderThickness="1" CornerRadius="3"
                     Padding="8,6" Margin="0,0,0,8">
                 <StackPanel>
@@ -76,9 +81,9 @@
                     </ScrollViewer>
                 </TabItem>
 
-                <TabItem Header="Utility">
+                <TabItem Header="Event">
                     <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding UtilityOptions}"
+                        <ItemsControl ItemsSource="{Binding EventOptions}"
                                       Padding="5"
                                       ItemTemplate="{StaticResource StartupItemTemplate}">
                             <ItemsControl.ItemsPanel>

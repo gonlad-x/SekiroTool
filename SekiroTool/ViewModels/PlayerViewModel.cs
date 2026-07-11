@@ -444,6 +444,18 @@ public class PlayerViewModel : BaseViewModel
         set => SetProperty(ref _currentAp, value);
     }
 
+    public bool IsDebugBuild
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
     private int _currentExperience;
 
     public int CurrentExperience
@@ -540,6 +552,8 @@ public class PlayerViewModel : BaseViewModel
         _hotkeyManager.RegisterAction(HotkeyActions.SavePos2, () => SavePosition(1));
         _hotkeyManager.RegisterAction(HotkeyActions.RestorePos1, () => RestorePosition(0));
         _hotkeyManager.RegisterAction(HotkeyActions.RestorePos2, () => RestorePosition(1));
+        _hotkeyManager.RegisterAction(HotkeyActions.SetMaxHp, SetMaxHp);
+        _hotkeyManager.RegisterNewGameAction(HotkeyActions.SetMaxHp, SetMaxHpOnNewGame);
         _hotkeyManager.RegisterAction(HotkeyActions.ApplyConfetti, SetApplyConfetti);
         _hotkeyManager.RegisterAction(HotkeyActions.ApplyGachiin, SetApplyGachiin);
         _hotkeyManager.RegisterAction(HotkeyActions.RemoveConfetti, SetRemoveConfetti);
@@ -574,7 +588,19 @@ public class PlayerViewModel : BaseViewModel
         _hotkeyManager.RegisterAction(HotkeyActions.DecreaseDamageMultiplier, () => DamageMultiplier = Math.Max(MinDamageMultiplier, DamageMultiplier - 0.1));
         _hotkeyManager.RegisterAction(HotkeyActions.ToggleDamageMultiplier, () => IsDamageMultiplierEnabled = !IsDamageMultiplierEnabled);
 
-
+        // Idempotent "ensure enabled" variants for startup/new-game application (see HotkeyManager.RegisterStartupAction).
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoDamage, () => IsNoDamageEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.OneShotHealth, () => IsOneShotEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.OneShotPosture, () => IsOneShotPostureEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoGoodsConsume, () => IsNoGoodsConsumeEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoEmblemConsume, () => IsNoEmblemConsumeEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.InfiniteRevival, () => IsNoRevivalConsumeEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.PlayerHide, () => IsPlayerHideEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.PlayerSilent, () => IsPlayerSilentEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.InfinitePoise, () => IsInfinitePoiseEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoDeath, () => IsNoDeathEnabled = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.NoDeathExKillbox, () => IsNoDeathEnabledWithoutKillbox = true);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.ToggleDamageMultiplier, () => IsDamageMultiplierEnabled = true);
     }
     
     
@@ -680,7 +706,29 @@ public class PlayerViewModel : BaseViewModel
 
     private void SetMaxHp()
     {
-        _playerService.SetHp(MaxHealth);
+        var maxHp = _playerService.GetMaxHp();
+        if (maxHp > 0) _playerService.SetHp(maxHp);
+    }
+
+    private const int NewGameStartingHp = 32;
+
+    // On a fresh New Game, the engine (re)writes its own starting HP pool (32)
+    // shortly after the player spawns, stomping an immediate apply back down.
+    // Wait for that reset to actually happen, then apply Max HP once after it,
+    // instead of racing it.
+    private void SetMaxHpOnNewGame()
+    {
+        Task.Run(async () =>
+        {
+            for (var i = 0; i < 60; i++)
+            {
+                if (_playerService.GetCurrentHp() == NewGameStartingHp) break;
+                await Task.Delay(250);
+            }
+
+            var maxHp = _playerService.GetMaxHp();
+            if (maxHp > 0) _playerService.SetHp(maxHp);
+        });
     }
 
     private void SetMaxPosture()

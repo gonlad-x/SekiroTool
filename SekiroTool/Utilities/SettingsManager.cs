@@ -12,6 +12,7 @@ public class SettingsManager
     
     public string HotkeyActionIds { get; set; } = "";
     public string StartupActionIds { get; set; } = "";
+    public bool StartupApplyOnNewGame { get; set; }
     public bool EnableHotkeys { get; set; }
     public bool NoLogo { get; set; }
     public bool AlwaysOnTop { get; set; }
@@ -25,6 +26,10 @@ public class SettingsManager
     public double WindowTop { get; set; }
     public bool EnableUpdateChecks { get; set; } = true;
     public bool HotkeyReminder { get; set; }
+
+    [DefaultValue(true)] public bool TargetOverlayShowDetails { get; set; }
+    [DefaultValue(1.0)] public double TargetOverlayScaleX { get; set; }
+    [DefaultValue(0.85)] public double TargetOverlayOpacity { get; set; }
     
     
     

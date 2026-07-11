@@ -12,6 +12,7 @@ public class TargetViewModel : BaseViewModel
     private readonly HotkeyManager _hotkeyManager;
     private readonly ITargetService _targetService;
     private readonly IDebugDrawService _debugDrawService;
+    private readonly IPlayerService _playerService;
     private readonly DispatcherTimer _targetTick;
 
     private bool _areOptionsEnabled;
@@ -81,13 +82,17 @@ public class TargetViewModel : BaseViewModel
     private float _staggerThreshold = 0f;
 
     private bool _isOverlayOpen;
+    private bool _isOverlayDetailedViewEnabled;
 
     public TargetViewModel(IStateService stateService, HotkeyManager hotkeyManager,
-        ITargetService targetService, IDebugDrawService debugDrawService)
+        ITargetService targetService, IDebugDrawService debugDrawService, IPlayerService playerService)
     {
         _hotkeyManager = hotkeyManager;
         _targetService = targetService;
         _debugDrawService = debugDrawService;
+        _playerService = playerService;
+
+        _isOverlayDetailedViewEnabled = SettingsManager.Default.TargetOverlayShowDetails;
 
         RegisterHotkeys();
 
@@ -106,6 +111,8 @@ public class TargetViewModel : BaseViewModel
 
         _hotkeyManager.RegisterAction(HotkeyActions.ToggleTargetOverlay,
             () => IsOverlayOpen = !IsOverlayOpen);
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.ToggleTargetOverlay,
+            () => IsOverlayOpen = true);
         _hotkeyManager.RegisterAction(HotkeyActions.ResetHitCount, ResetHitCount);
 
         _targetTick = new DispatcherTimer
@@ -187,14 +194,26 @@ public class TargetViewModel : BaseViewModel
     public int TargetCurrentHealth
     {
         get => _targetCurrentHealth;
-        set => SetProperty(ref _targetCurrentHealth, value);
+        set
+        {
+            SetProperty(ref _targetCurrentHealth, value);
+            OnPropertyChanged(nameof(TargetHealthPercentage));
+        }
     }
 
     public int TargetMaxHealth
     {
         get => _targetMaxHealth;
-        set => SetProperty(ref _targetMaxHealth, value);
+        set
+        {
+            SetProperty(ref _targetMaxHealth, value);
+            OnPropertyChanged(nameof(TargetHealthPercentage));
+        }
     }
+
+    public double TargetHealthPercentage => TargetMaxHealth > 0
+        ? Math.Round(TargetCurrentHealth / (double)TargetMaxHealth * 100, 1)
+        : 0.0;
 
     public bool IsFreezeHealthEnabled
     {
@@ -221,14 +240,26 @@ public class TargetViewModel : BaseViewModel
     public int TargetCurrentPosture
     {
         get => _targetCurrentPosture;
-        set => SetProperty(ref _targetCurrentPosture, value);
+        set
+        {
+            SetProperty(ref _targetCurrentPosture, value);
+            OnPropertyChanged(nameof(TargetPosturePercentage));
+        }
     }
 
     public int TargetMaxPosture
     {
         get => _targetMaxPosture;
-        set => SetProperty(ref _targetMaxPosture, value);
+        set
+        {
+            SetProperty(ref _targetMaxPosture, value);
+            OnPropertyChanged(nameof(TargetPosturePercentage));
+        }
     }
+
+    public double TargetPosturePercentage => TargetMaxPosture > 0
+        ? Math.Round(TargetCurrentPosture / (double)TargetMaxPosture * 100, 1)
+        : 0.0;
 
     public bool IsFreezePostureEnabled
     {
@@ -249,7 +280,11 @@ public class TargetViewModel : BaseViewModel
     public float TargetMaxPoise
     {
         get => _targetMaxPoise;
-        set => SetProperty(ref _targetMaxPoise, value);
+        set
+        {
+            SetProperty(ref _targetMaxPoise, value);
+            OnPropertyChanged(nameof(HasValidPoise));
+        }
     }
 
     public float TargetPoiseTimer
@@ -264,11 +299,14 @@ public class TargetViewModel : BaseViewModel
         set
         {
             SetProperty(ref _showPoise, value);
+            OnPropertyChanged(nameof(HasValidPoise));
             // if (!IsResistancesWindowOpen || _resistancesWindowWindow == null) return;
             // _resistancesWindowWindow.DataContext = null;
             // _resistancesWindowWindow.DataContext = this;
         }
     }
+
+    public bool HasValidPoise => ShowPoise && TargetMaxPoise > 0;
 
     public int TargetCurrentPoison
     {
@@ -559,6 +597,19 @@ public class TargetViewModel : BaseViewModel
         set => SetProperty(ref _isOverlayOpen, value);
     }
 
+    public bool IsOverlayDetailedViewEnabled
+    {
+        get => _isOverlayDetailedViewEnabled;
+        set
+        {
+            if (SetProperty(ref _isOverlayDetailedViewEnabled, value))
+            {
+                SettingsManager.Default.TargetOverlayShowDetails = value;
+                SettingsManager.Default.Save();
+            }
+        }
+    }
+
     #endregion
 
     #region Private Methods
@@ -567,6 +618,8 @@ public class TargetViewModel : BaseViewModel
     {
         _hotkeyManager.RegisterAction(HotkeyActions.EnableTargetOptions,
             () => { IsTargetOptionsEnabled = !IsTargetOptionsEnabled; });
+        _hotkeyManager.RegisterStartupAction(HotkeyActions.EnableTargetOptions,
+            () => IsTargetOptionsEnabled = true);
         _hotkeyManager.RegisterAction(HotkeyActions.FreezeTargetHp, () =>
             ExecuteTargetAction(() => IsFreezeHealthEnabled = !IsFreezeHealthEnabled));
         _hotkeyManager.RegisterAction(HotkeyActions.SetTargetOneHp, () =>
@@ -663,6 +716,19 @@ public class TargetViewModel : BaseViewModel
         HitCount = 0f;
     }
 
+    // Player Attack Power (and therefore R1 poise damage) scales down with New Game cycle.
+    private static float GetBaseR1PoiseDamage(int newGameCycle) => newGameCycle switch
+    {
+        <= 0 => 40f,
+        1 => 38f,
+        2 => 36f,
+        3 => 34f,
+        4 => 32f,
+        5 => 28f,
+        6 => 26f,
+        _ => 24f,
+    };
+
     private void TargetTick(object? sender, EventArgs e)
     {
         if (!IsTargetValid())
@@ -707,17 +773,14 @@ public class TargetViewModel : BaseViewModel
 
         TargetMaxHealth = _targetService.GetMaxHp();
         TargetMaxPosture = _targetService.GetMaxPosture();
-        var newMaxPoise = _targetService.GetMaxPoise();
-        if (Math.Abs(newMaxPoise - TargetMaxPoise) > 0.01f)
-        {
-            TargetMaxPoise = newMaxPoise;
-            StaggerThreshold = (float)Math.Round(TargetMaxPoise / 24f, 1);
-        }
+        TargetMaxPoise = _targetService.GetMaxPoise();
+        var baseR1PoiseDamage = GetBaseR1PoiseDamage(_playerService.GetNewGame());
+        StaggerThreshold = (float)Math.Round(TargetMaxPoise / baseR1PoiseDamage, 1);
         TargetCurrentHealth = _targetService.GetCurrentHp();
         TargetCurrentPosture = _targetService.GetCurrentPosture();
         TargetCurrentPoise = _targetService.GetCurrentPoise();
         TargetPoiseTimer = _targetService.GetPoiseTimer();
-        HitCount = TargetMaxPoise > 0f ? Math.Max(0f, (TargetMaxPoise - TargetCurrentPoise) / 24f) : 0f;
+        HitCount = TargetMaxPoise > 0f ? Math.Max(0f, (TargetMaxPoise - TargetCurrentPoise) / baseR1PoiseDamage) : 0f;
         TargetCurrentPoison = _targetService.GetCurrentPoison();
         TargetCurrentBurn = _targetService.GetCurrentBurn();
         TargetCurrentShock = _targetService.GetCurrentShock();

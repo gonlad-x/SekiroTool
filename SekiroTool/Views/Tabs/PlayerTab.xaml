@@ -10,6 +10,7 @@
              d:DesignHeight="670" d:DesignWidth="520">
     <UserControl.Resources>
         <converters1:BooleanAndConverter x:Key="BooleanAndConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -371,6 +372,12 @@
                                                 BorderBrush="#3F3F46" />
                             <TextBlock Text="Attack Power" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" />
                         </Grid>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,2"
+                                    Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Current AP (read): " Foreground="#888" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CurrentAp}" Foreground="#888" VerticalAlignment="Center" />
+                        </StackPanel>
                         <StackPanel>
                             
                         </StackPanel>
