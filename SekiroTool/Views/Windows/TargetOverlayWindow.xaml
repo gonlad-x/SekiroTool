@@ -10,6 +10,7 @@
         Background="Transparent"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
+        MaxWidth="500"
         Topmost="True">
 
     <Window.Resources>
@@ -119,7 +120,7 @@
                                 Visibility="{Binding HasValidPoise, Converter={StaticResource BoolToVis}}">
                         <StackPanel Visibility="{Binding IsOverlayDetailedViewEnabled, Converter={StaticResource BoolToVis}}">
                             <ProgressBar Height="20"
-                                         MinWidth="230"
+                                         Width="230"
                                          Value="{Binding TargetCurrentPoise, Mode=OneWay}"
                                          Maximum="{Binding TargetMaxPoise, FallbackValue=100}">
                                 <ProgressBar.Template>
