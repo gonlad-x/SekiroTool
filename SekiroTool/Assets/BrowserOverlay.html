@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Sekiro Tool - Target Overlay</title>
+<style>
+    :root {
+        --label-font-family: "Segoe UI", Arial, sans-serif;
+        --label-font-size: 14px;
+        --label-color: #cdd6f4;
+
+        --value-font-family: "Segoe UI", Arial, sans-serif;
+        --value-font-size: 14px;
+        --value-color: #04a5e5;
+
+        --hitcount-font-family: "Segoe UI", Arial, sans-serif;
+        --hitcount-font-size: 16px;
+        --hitcount-color: #04a5e5;
+
+        --stagger-font-family: "Segoe UI", Arial, sans-serif;
+        --stagger-font-size: 14px;
+        --stagger-color: #cdd6f4;
+
+        --bar-color: #f2cdcd;
+        --bg-opacity: 0;
+        --row-height: 24px;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        font-family: var(--label-font-family);
+    }
+
+    #card {
+        display: inline-block;
+        background: rgba(0, 0, 0, var(--bg-opacity));
+        border-radius: 6px;
+        padding: 10px 14px 14px;
+        min-width: 230px;
+        box-sizing: border-box;
+        opacity: 1;
+        transition: opacity 0.2s ease, background 0.2s ease;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.9);
+    }
+
+    #card.hidden {
+        opacity: 0;
+    }
+
+    #card.labels-hidden .hideable-label {
+        display: none;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+        height: var(--row-height);
+        white-space: nowrap;
+    }
+
+    .inline-group {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .label {
+        font-family: var(--label-font-family);
+        font-size: var(--label-font-size);
+        color: var(--label-color);
+    }
+
+    .value {
+        font-family: var(--value-font-family);
+        font-size: var(--value-font-size);
+        color: var(--value-color);
+        font-weight: 600;
+        margin-left: 4px;
+    }
+
+    .spacer {
+        display: inline-block;
+        width: 10px;
+    }
+
+    .bar-wrap {
+        border: 1px solid #444;
+        background: #222;
+        border-radius: 3px;
+        height: 20px;
+        width: 230px;
+        position: relative;
+        overflow: hidden;
+        margin: 0 0 8px 0;
+    }
+
+    .bar-fill {
+        height: 100%;
+        background: var(--bar-color);
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.15s linear;
+    }
+
+    .bar-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: var(--value-font-family);
+        font-size: calc(var(--value-font-size) - 1px);
+    }
+
+    .timer {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        margin-bottom: 8px;
+        height: var(--row-height);
+    }
+
+    #hitCount {
+        font-family: var(--hitcount-font-family);
+        font-size: var(--hitcount-font-size);
+        color: var(--hitcount-color);
+    }
+
+    #staggerThreshold {
+        font-family: var(--stagger-font-family);
+        font-size: var(--stagger-font-size);
+        color: var(--stagger-color);
+    }
+</style>
+</head>
+<body>
+    <div id="card" class="hidden">
+        <div class="row" id="hitsRow">
+            <span class="label hideable-label" id="hitsLabel">Hits to stagger:</span>
+            <span class="value" id="hitCount">0.0</span>
+            <span class="label spacer"></span>
+            <span class="label">/</span>
+            <span class="label" id="staggerThreshold" style="margin-left:4px;">0.0</span>
+        </div>
+
+        <div id="poiseSection">
+            <div class="bar-wrap">
+                <div class="bar-fill" id="poiseFill"></div>
+                <div class="bar-text" id="poiseText">0.0 / 0.0</div>
+            </div>
+            <div class="timer" id="poiseTimerRow"><span class="label hideable-label" id="poiseTimerLabel">Poise timer:</span> <span class="value" id="poiseTimerValue">0.0s</span></div>
+        </div>
+
+        <div class="row">
+            <span class="inline-group" id="hpGroup">
+                <span class="label hideable-label" id="hpLabel">HP:</span>
+                <span class="value" id="hpValue" style="margin-right:10px;">0.0%</span>
+            </span>
+            <span class="inline-group" id="postureGroup">
+                <span class="label hideable-label" id="postureLabel">Posture:</span>
+                <span class="value" id="postureValue">0.0%</span>
+            </span>
+        </div>
+
+        <div class="row" id="actRow">
+            <span class="label hideable-label" id="actLabel">Act:</span>
+            <span class="value" id="lastAct" style="margin-right:14px;">0</span>
+            <span class="label hideable-label" id="kengekiLabel">Kengeki:</span>
+            <span class="value" id="lastKengekiAct">0</span>
+        </div>
+    </div>
+
+<script>
+    var card = document.getElementById("card");
+    var hitsRow = document.getElementById("hitsRow");
+    var hitsLabel = document.getElementById("hitsLabel");
+    var hitCount = document.getElementById("hitCount");
+    var staggerThreshold = document.getElementById("staggerThreshold");
+    var poiseSection = document.getElementById("poiseSection");
+    var poiseFill = document.getElementById("poiseFill");
+    var poiseText = document.getElementById("poiseText");
+    var poiseTimerRow = document.getElementById("poiseTimerRow");
+    var poiseTimerLabel = document.getElementById("poiseTimerLabel");
+    var poiseTimerValue = document.getElementById("poiseTimerValue");
+    var hpGroup = document.getElementById("hpGroup");
+    var hpLabel = document.getElementById("hpLabel");
+    var hpValue = document.getElementById("hpValue");
+    var postureGroup = document.getElementById("postureGroup");
+    var postureLabel = document.getElementById("postureLabel");
+    var postureValue = document.getElementById("postureValue");
+    var actRow = document.getElementById("actRow");
+    var actLabel = document.getElementById("actLabel");
+    var lastAct = document.getElementById("lastAct");
+    var kengekiLabel = document.getElementById("kengekiLabel");
+    var lastKengekiAct = document.getElementById("lastKengekiAct");
+
+    var overlayConfig = {
+        showLabels: true,
+        showHitsRow: true,
+        showPoiseBar: true,
+        showHp: true,
+        showPosture: true,
+        showPoiseTimer: true,
+        showActKengeki: true
+    };
+
+    function render(data) {
+        var active = !!data.active;
+        card.classList.toggle("hidden", !active);
+        if (!active) return;
+
+        var remainingHits = Math.max(0, Number(data.staggerThreshold) - Number(data.hitCount));
+        hitCount.textContent = remainingHits.toFixed(1);
+        staggerThreshold.textContent = Number(data.staggerThreshold).toFixed(1);
+        hitsRow.style.display = overlayConfig.showHitsRow ? "flex" : "none";
+
+        var hasValidPoise = !!data.hasValidPoise;
+        poiseSection.style.display = (hasValidPoise && overlayConfig.showPoiseBar) ? "block" : "none";
+        if (hasValidPoise) {
+            var maxPoise = Number(data.maxPoise);
+            var currentPoise = Number(data.currentPoise);
+            var pct = maxPoise > 0 ? Math.min(100, Math.max(0, (currentPoise / maxPoise) * 100)) : 0;
+            poiseFill.style.width = pct + "%";
+            poiseText.textContent = currentPoise.toFixed(1) + " / " + maxPoise.toFixed(1);
+            poiseTimerValue.textContent = Number(data.poiseTimer).toFixed(1) + "s";
+        }
+        poiseTimerRow.style.display = (hasValidPoise && overlayConfig.showPoiseTimer) ? "block" : "none";
+
+        hpValue.textContent = Number(data.healthPercentage).toFixed(1) + "%";
+        postureValue.textContent = Number(data.posturePercentage).toFixed(1) + "%";
+        hpGroup.style.display = overlayConfig.showHp ? "inline-flex" : "none";
+        postureGroup.style.display = overlayConfig.showPosture ? "inline-flex" : "none";
+
+        var showActRow = overlayConfig.showActKengeki;
+        actRow.style.display = showActRow ? "flex" : "none";
+        lastAct.textContent = data.lastAct;
+        lastKengekiAct.textContent = data.lastKengekiAct;
+    }
+
+    function fontStack(name) {
+        return "'" + (name || "Segoe UI") + "', Arial, sans-serif";
+    }
+
+    function applyConfig(cfg) {
+        var root = document.documentElement.style;
+
+        root.setProperty("--label-font-family", fontStack(cfg.labelFontFamily));
+        root.setProperty("--label-font-size", (cfg.labelFontSize || 14) + "px");
+        root.setProperty("--label-color", cfg.labelColor || "#cdd6f4");
+
+        root.setProperty("--value-font-family", fontStack(cfg.valueFontFamily));
+        root.setProperty("--value-font-size", (cfg.valueFontSize || 14) + "px");
+        root.setProperty("--value-color", cfg.valueColor || "#04a5e5");
+
+        root.setProperty("--hitcount-font-family", fontStack(cfg.hitCountFontFamily));
+        root.setProperty("--hitcount-font-size", (cfg.hitCountFontSize || 16) + "px");
+        root.setProperty("--hitcount-color", cfg.hitCountColor || "#04a5e5");
+
+        root.setProperty("--stagger-font-family", fontStack(cfg.staggerThresholdFontFamily));
+        root.setProperty("--stagger-font-size", (cfg.staggerThresholdFontSize || 14) + "px");
+        root.setProperty("--stagger-color", cfg.staggerThresholdColor || "#cdd6f4");
+
+        root.setProperty("--bar-color", cfg.barColor || "#f2cdcd");
+        root.setProperty("--bg-opacity", cfg.backgroundOpacity != null ? cfg.backgroundOpacity : 0);
+        root.setProperty("--row-height", (cfg.rowHeight || 24) + "px");
+
+        hitsLabel.textContent = cfg.hitsLabelText != null ? cfg.hitsLabelText : "Hits to stagger:";
+        hpLabel.textContent = cfg.hpLabelText != null ? cfg.hpLabelText : "HP:";
+        postureLabel.textContent = cfg.postureLabelText != null ? cfg.postureLabelText : "Posture:";
+        poiseTimerLabel.textContent = cfg.poiseTimerLabelText != null ? cfg.poiseTimerLabelText : "Poise timer:";
+        actLabel.textContent = cfg.actLabelText != null ? cfg.actLabelText : "Act:";
+        kengekiLabel.textContent = cfg.kengekiLabelText != null ? cfg.kengekiLabelText : "Kengeki:";
+
+        overlayConfig.showLabels = cfg.showLabels !== false;
+        overlayConfig.showHitsRow = cfg.showHitsRow !== false;
+        overlayConfig.showPoiseBar = cfg.showPoiseBar !== false;
+        overlayConfig.showHp = cfg.showHp !== false;
+        overlayConfig.showPosture = cfg.showPosture !== false;
+        overlayConfig.showPoiseTimer = cfg.showPoiseTimer !== false;
+        overlayConfig.showActKengeki = cfg.showActKengeki !== false;
+
+        card.classList.toggle("labels-hidden", !overlayConfig.showLabels);
+    }
+
+    function poll() {
+        fetch("overlay_data.json?t=" + Date.now(), { cache: "no-store" })
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) { if (data) render(data); })
+            .catch(function () { /* file not written yet, keep last frame */ })
+            .then(function () { setTimeout(poll, 150); });
+    }
+
+    function pollConfig() {
+        fetch("overlay_config.json?t=" + Date.now(), { cache: "no-store" })
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (cfg) { if (cfg) applyConfig(cfg); })
+            .catch(function () { /* config not written yet, keep last applied */ })
+            .then(function () { setTimeout(pollConfig, 1000); });
+    }
+
+    poll();
+    pollConfig();
+</script>
+</body>
+</html>

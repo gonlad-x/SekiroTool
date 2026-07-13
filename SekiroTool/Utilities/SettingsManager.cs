@@ -12,6 +12,7 @@ public class SettingsManager
     
     public string HotkeyActionIds { get; set; } = "";
     public string StartupActionIds { get; set; } = "";
+    [DefaultValue(true)] public bool StartupOptionsEnabled { get; set; }
     public bool EnableHotkeys { get; set; }
     public bool NoLogo { get; set; }
     public bool AlwaysOnTop { get; set; }
@@ -31,9 +32,44 @@ public class SettingsManager
     [DefaultValue(0.85)] public double TargetOverlayOpacity { get; set; }
     public double TargetOverlayLeft { get; set; } = double.NaN;
     public double TargetOverlayTop { get; set; } = double.NaN;
-    
-    
-    
+    public bool BrowserOverlayEnabled { get; set; }
+
+    public string BrowserOverlayLabelFontFamily { get; set; } = "Segoe UI";
+    public double BrowserOverlayLabelFontSize { get; set; } = 14;
+    public string BrowserOverlayLabelColor { get; set; } = "#CDD6F4";
+
+    public string BrowserOverlayValueFontFamily { get; set; } = "Segoe UI";
+    public double BrowserOverlayValueFontSize { get; set; } = 14;
+    public string BrowserOverlayValueColor { get; set; } = "#04A5E5";
+
+    public string BrowserOverlayHitCountFontFamily { get; set; } = "Segoe UI";
+    public double BrowserOverlayHitCountFontSize { get; set; } = 16;
+    public string BrowserOverlayHitCountColor { get; set; } = "#04A5E5";
+
+    public string BrowserOverlayStaggerThresholdFontFamily { get; set; } = "Segoe UI";
+    public double BrowserOverlayStaggerThresholdFontSize { get; set; } = 14;
+    public string BrowserOverlayStaggerThresholdColor { get; set; } = "#CDD6F4";
+
+    public string BrowserOverlayBarColor { get; set; } = "#F2CDCD";
+    public double BrowserOverlayBackgroundOpacity { get; set; } = 0.0;
+    public double BrowserOverlayRowHeight { get; set; } = 24;
+
+    [DefaultValue(true)] public bool BrowserOverlayShowLabels { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowHitsRow { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowPoiseBar { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowHp { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowPosture { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowPoiseTimer { get; set; }
+    [DefaultValue(true)] public bool BrowserOverlayShowActKengeki { get; set; }
+    public string BrowserOverlayHitsLabelText { get; set; } = "Hits to stagger:";
+    public string BrowserOverlayHpLabelText { get; set; } = "HP:";
+    public string BrowserOverlayPostureLabelText { get; set; } = "Posture:";
+    public string BrowserOverlayPoiseTimerLabelText { get; set; } = "Poise timer:";
+    public string BrowserOverlayActLabelText { get; set; } = "Act:";
+    public string BrowserOverlayKengekiLabelText { get; set; } = "Kengeki:";
+
+
+
     private static string SettingsPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "SekiroTool",

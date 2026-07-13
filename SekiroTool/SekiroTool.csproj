@@ -51,5 +51,10 @@
       <None Remove="Assets\icon.ico" />
       <Resource Include="Assets\icon.ico" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+      <None Remove="Assets\BrowserOverlay.html" />
+      <EmbeddedResource Include="Assets\BrowserOverlay.html" />
+    </ItemGroup>
+
 </Project>

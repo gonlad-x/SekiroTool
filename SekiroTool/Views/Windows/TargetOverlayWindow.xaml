@@ -106,13 +106,13 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5"
                                 Visibility="{Binding HasValidPoise, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="Nb of hits: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Hits to stagger: " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding HitCount, StringFormat={}{0:F1}, Mode=OneWay}"
-                                   Foreground="Gold" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#04A5E5" FontSize="16" FontWeight="SemiBold"
                                    MinWidth="32" TextAlignment="Right" VerticalAlignment="Center" />
-                        <TextBlock Text=" / " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text=" / " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding StaggerThreshold, StringFormat={}{0:F1}, Mode=OneWay}"
-                                   Foreground="#888" FontSize="14"
+                                   Foreground="#CDD6F4" FontSize="14"
                                    MinWidth="32" TextAlignment="Left" VerticalAlignment="Center" />
                     </StackPanel>
 
@@ -128,7 +128,7 @@
                                         <Border BorderBrush="#444" BorderThickness="1" Background="#222" CornerRadius="3">
                                             <Grid x:Name="PART_Track">
                                                 <Rectangle x:Name="PART_Indicator"
-                                                           Fill="#4CAF50"
+                                                           Fill="#F2CDCD"
                                                            HorizontalAlignment="Left"
                                                            RadiusX="2" RadiusY="2"
                                                            Margin="1" />
@@ -147,7 +147,7 @@
                             </ProgressBar>
 
                             <TextBlock Text="{Binding TargetPoiseTimer, StringFormat={}Poise timer: {0:F1}s, Mode=OneWay}"
-                                       Foreground="#AAAAAA"
+                                       Foreground="#CDD6F4"
                                        FontSize="13"
                                        HorizontalAlignment="Center"
                                        Margin="0,3,0,0" />
@@ -155,30 +155,30 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
-                        <TextBlock Text="HP: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="HP: " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding TargetHealthPercentage, StringFormat={}{0:F1}%, Mode=OneWay}"
-                                   Foreground="Gold" FontSize="14"
+                                   Foreground="#04A5E5" FontSize="14"
                                    VerticalAlignment="Center"
                                    Margin="0,0,10,0" />
-                        <TextBlock Text="Posture: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Posture: " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding TargetPosturePercentage, StringFormat={}{0:F1}%, Mode=OneWay}"
-                                   Foreground="Gold" FontSize="14"
+                                   Foreground="#04A5E5" FontSize="14"
                                    VerticalAlignment="Center" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                 Visibility="{Binding IsOverlayDetailedViewEnabled, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="Act: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Act: " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding LastAct, Mode=OneWay}"
-                                   Foreground="Gold"
+                                   Foreground="#04A5E5"
                                    FontSize="14"
                                    Width="24"
                                    TextAlignment="Right"
                                    VerticalAlignment="Center"
                                    Margin="0,0,14,0" />
-                        <TextBlock Text="Kengeki: " Foreground="#888" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Kengeki: " Foreground="#CDD6F4" FontSize="14" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding LastKengekiAct, Mode=OneWay}"
-                                   Foreground="Gold"
+                                   Foreground="#04A5E5"
                                    FontSize="14"
                                    Width="24"
                                    TextAlignment="Right"

@@ -89,8 +89,7 @@ public partial class MainWindow : Window
         var utilityTab = new UtilityTab(utilityViewModel);
         var itemTab = new ItemTab(itemViewModel);
         var eventTab = new EventTab(eventViewModel);
-        var startupTab = new StartupTab(startupViewModel);
-        var settingsTab = new SettingsTab(settingsViewModel);
+        var settingsTab = new SettingsTab(settingsViewModel, startupViewModel);
 
         MainTabControl.Items.Add(new TabItem { Header = "Player", Content = playerTab });
         MainTabControl.Items.Add(new TabItem { Header = "Travel", Content = travelTab });
@@ -99,7 +98,6 @@ public partial class MainWindow : Window
         MainTabControl.Items.Add(new TabItem { Header = "Utility", Content = utilityTab });
         MainTabControl.Items.Add(new TabItem { Header = "Items", Content = itemTab });
         MainTabControl.Items.Add(new TabItem { Header = "Event", Content = eventTab });
-        MainTabControl.Items.Add(new TabItem { Header = "Startup", Content = startupTab });
         MainTabControl.Items.Add(new TabItem { Header = "Settings", Content = settingsTab });
 
         MainTabControl.SelectionChanged += MainTabControl_SelectionChanged;
@@ -233,6 +231,8 @@ public partial class MainWindow : Window
         SettingsManager.Default.WindowLeft = Left;
         SettingsManager.Default.WindowTop = Top;
         SettingsManager.Default.Save();
+
+        if (SettingsManager.Default.BrowserOverlayEnabled) BrowserOverlayExporter.Clear();
     }
 
     private void LaunchGame_Click(object sender, RoutedEventArgs e) => Task.Run(GameLauncher.LaunchSekiro);

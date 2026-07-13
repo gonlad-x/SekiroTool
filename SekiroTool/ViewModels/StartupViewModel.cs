@@ -12,6 +12,18 @@ public class StartupViewModel : BaseViewModel
     private readonly Dictionary<string, StartupOptionViewModel> _newGameOptions;
     private readonly Dictionary<string, StartupOptionViewModel> _lookup;
     private bool _startupApplied;
+    private bool _isEnabled = true;
+
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
+        {
+            if (!SetProperty(ref _isEnabled, value)) return;
+            SettingsManager.Default.StartupOptionsEnabled = value;
+            SettingsManager.Default.Save();
+        }
+    }
 
     // Activate on Game Load
     public ObservableCollection<StartupOptionViewModel> PlayerOptions { get; }
@@ -138,12 +150,15 @@ public class StartupViewModel : BaseViewModel
     {
         if (_startupApplied) return;
         _startupApplied = true;
+        if (!IsEnabled) return;
         foreach (var option in _gameLoadOptions.Values.Where(o => o.IsEnabled))
             _hotkeyManager.TriggerStartupAction(option.ActionId);
     }
 
     private void OnGameStart()
     {
+        if (!IsEnabled) return;
+
         // Also silently reasserts enabled "Activate on Game Load" options whose
         // underlying effect lives in per-character memory (e.g. No Damage) and
         // would otherwise be lost when a New Game allocates a fresh character.
@@ -166,5 +181,7 @@ public class StartupViewModel : BaseViewModel
 
         foreach (var option in _lookup.Values)
             option.IsEnabled = ids.Contains(option.ActionId);
+
+        _isEnabled = SettingsManager.Default.StartupOptionsEnabled;
     }
 }

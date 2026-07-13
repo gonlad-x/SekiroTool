@@ -2,17 +2,20 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using SekiroTool.ViewModels;
+using SekiroTool.Views.Windows;
 
 namespace SekiroTool.Views.Tabs;
 
 public partial class SettingsTab : UserControl
 {
     private readonly SettingsViewModel _settingsViewModel;
-        
-    public SettingsTab(SettingsViewModel settingsViewModel)
+    private readonly StartupViewModel _startupViewModel;
+
+    public SettingsTab(SettingsViewModel settingsViewModel, StartupViewModel startupViewModel)
     {
         DataContext = settingsViewModel;
         _settingsViewModel = settingsViewModel;
+        _startupViewModel = startupViewModel;
         InitializeComponent();
     }
     
@@ -36,6 +39,24 @@ public partial class SettingsTab : UserControl
     private void HotkeyTextBox_LostFocus(object sender, RoutedEventArgs e)
     {
         _settingsViewModel.ConfirmHotkey();
+    }
+
+    private void CustomizeOverlayButton_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new OverlayCustomizationWindow
+        {
+            Owner = Window.GetWindow(this)
+        };
+        window.ShowDialog();
+    }
+
+    private void ActivateOnLaunchButton_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new StartupOptionsWindow(_startupViewModel)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        window.ShowDialog();
     }
 
     private void HotkeyTextBox_KeyDown(object sender, KeyEventArgs e)

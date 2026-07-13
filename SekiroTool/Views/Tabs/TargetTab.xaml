@@ -306,6 +306,31 @@
                                            FontWeight="Bold"
                                            FontSize="10" />
                             </Border>
+
+                            <CheckBox Content="Browser overlay (OBS)"
+                                      IsChecked="{Binding IsBrowserOverlayEnabled}"
+                                      Margin="14,2,0,2"
+                                      VerticalAlignment="Center" />
+                            <Border Background="#3498db"
+                                    CornerRadius="10"
+                                    Width="12" Height="12"
+                                    Margin="5,0,0,0"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Exports live target stats to overlay.html / overlay_data.json.&#x0A;Add overlay.html as a Local File Browser Source in OBS."
+                                    ToolTipService.InitialShowDelay="100">
+                                <TextBlock Text="i"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontWeight="Bold"
+                                           FontSize="10" />
+                            </Border>
+                            <Button Content="Open Folder"
+                                    Margin="8,0,0,0"
+                                    Padding="6,1"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding OpenBrowserOverlayFolderCommand}"
+                                    Visibility="{Binding IsBrowserOverlayEnabled, Converter={StaticResource BoolToVis}}" />
                         </StackPanel>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>

@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics;
+using System.Windows.Input;
 using System.Windows.Threading;
 using SekiroTool.Core;
 using SekiroTool.Enums;
@@ -83,6 +84,7 @@ public class TargetViewModel : BaseViewModel
 
     private bool _isOverlayOpen;
     private bool _isOverlayDetailedViewEnabled;
+    private bool _isBrowserOverlayEnabled;
 
     public TargetViewModel(IStateService stateService, HotkeyManager hotkeyManager,
         ITargetService targetService, IDebugDrawService debugDrawService, IPlayerService playerService)
@@ -93,6 +95,12 @@ public class TargetViewModel : BaseViewModel
         _playerService = playerService;
 
         _isOverlayDetailedViewEnabled = SettingsManager.Default.TargetOverlayShowDetails;
+        _isBrowserOverlayEnabled = SettingsManager.Default.BrowserOverlayEnabled;
+        if (_isBrowserOverlayEnabled)
+        {
+            BrowserOverlayExporter.EnsureHtmlExported();
+            BrowserOverlayExporter.WriteConfig();
+        }
 
         RegisterHotkeys();
 
@@ -108,6 +116,7 @@ public class TargetViewModel : BaseViewModel
         SetCustomPostureCommand = new DelegateCommand(SetCustomPosture);
 
         ResetHitCountCommand = new DelegateCommand(ResetHitCount);
+        OpenBrowserOverlayFolderCommand = new DelegateCommand(OpenBrowserOverlayFolder);
 
         _hotkeyManager.RegisterAction(HotkeyActions.ToggleTargetOverlay,
             () => IsOverlayOpen = !IsOverlayOpen);
@@ -133,6 +142,7 @@ public class TargetViewModel : BaseViewModel
     public ICommand SetCustomPostureCommand { get; set; }
 
     public ICommand ResetHitCountCommand { get; }
+    public ICommand OpenBrowserOverlayFolderCommand { get; }
 
     #endregion
 
@@ -175,6 +185,8 @@ public class TargetViewModel : BaseViewModel
                 ShowPoison = false;
                 ShowBurn = false;
                 ShowShock = false;
+
+                if (_isBrowserOverlayEnabled) BrowserOverlayExporter.Clear();
             }
         }
     }
@@ -610,6 +622,25 @@ public class TargetViewModel : BaseViewModel
         }
     }
 
+    public bool IsBrowserOverlayEnabled
+    {
+        get => _isBrowserOverlayEnabled;
+        set
+        {
+            if (!SetProperty(ref _isBrowserOverlayEnabled, value)) return;
+
+            SettingsManager.Default.BrowserOverlayEnabled = value;
+            SettingsManager.Default.Save();
+
+            if (value)
+            {
+                BrowserOverlayExporter.EnsureHtmlExported();
+                BrowserOverlayExporter.WriteConfig();
+            }
+            else BrowserOverlayExporter.Clear();
+        }
+    }
+
     #endregion
 
     #region Private Methods
@@ -716,6 +747,12 @@ public class TargetViewModel : BaseViewModel
         HitCount = 0f;
     }
 
+    private void OpenBrowserOverlayFolder()
+    {
+        BrowserOverlayExporter.EnsureHtmlExported();
+        Process.Start(new ProcessStartInfo(BrowserOverlayExporter.FolderPath) { UseShellExecute = true });
+    }
+
     // Player Attack Power (and therefore R1 poise damage) scales down with New Game cycle.
     private static float GetBaseR1PoiseDamage(int newGameCycle) => newGameCycle switch
     {
@@ -789,6 +826,13 @@ public class TargetViewModel : BaseViewModel
 
         LastAct = _targetService.GetLastAct();
         LastKengekiAct = _targetService.GetLastKengekiAct();
+
+        if (_isBrowserOverlayEnabled)
+        {
+            BrowserOverlayExporter.Write(HasValidPoise, HitCount, StaggerThreshold,
+                TargetCurrentPoise, TargetMaxPoise, TargetPoiseTimer, TargetHealthPercentage, TargetPosturePercentage,
+                LastAct, LastKengekiAct);
+        }
     }
 
     private bool IsTargetValid()
