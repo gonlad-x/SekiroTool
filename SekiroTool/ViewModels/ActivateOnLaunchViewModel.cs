@@ -24,6 +24,8 @@ public class ActivateOnLaunchViewModel : BaseViewModel
 
         RegisterActions();
 
+        stateService.Subscribe(State.AppStart, OnAppStart);
+        stateService.Subscribe(State.Attached, OnGameAttached);
         stateService.Subscribe(State.Loaded, OnGameLoaded);
         stateService.Subscribe(State.GameStart, OnNewGameStart);
     }
@@ -440,15 +442,11 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         _isNoKurosCharmOffChecked = Get(nameof(IsNoKurosCharmOffChecked));
     }
 
-    private void OnGameLoaded()
+    private void OnAppStart()
     {
         if (!IsEnabled) return;
 
         // Player
-        if (IsApplyConfettiChecked) _playerViewModel.SetApplyConfettiCommand.Execute(null);
-        if (IsApplyGachiinChecked) _playerViewModel.SetApplyGachiinCommand.Execute(null);
-        if (IsRemoveConfettiChecked) _playerViewModel.RemoveConfettiCommand.Execute(null);
-        if (IsRemoveGachiinChecked) _playerViewModel.RemoveGachiinCommand.Execute(null);
         if (IsOneShotHealthChecked) _playerViewModel.IsOneShotEnabled = true;
         if (IsOneShotPostureChecked) _playerViewModel.IsOneShotPostureEnabled = true;
         if (IsNoGoodsConsumeChecked) _playerViewModel.IsNoGoodsConsumeEnabled = true;
@@ -465,13 +463,33 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         if (IsToggleDamageMultiplierChecked) _playerViewModel.IsDamageMultiplierEnabled = true;
 
         // Enemies
-        if (IsSkipDragonPhaseOneChecked) _enemyViewModel.SkipDragonPhaseOneCommand.Execute(null);
-        if (IsTriggerDragonFinalAttackChecked) _enemyViewModel.TriggerDragonFinalAttackCommand.Execute(null);
         if (IsNoButterflySummonsChecked) _enemyViewModel.IsNoButterflySummonsEnabled = true;
         if (IsSnakeIntroLoopChecked) _enemyViewModel.IsSnakeIntroLoopEnabled = true;
 
         // Target
         if (IsEnableTargetOptionsChecked) _targetViewModel.IsTargetOptionsEnabled = true;
+    }
+
+    private void OnGameAttached()
+    {
+        // No attach-gated Activate On Launch options for Sekiro yet (e.g. TarnishedTool's launch FPS);
+        // kept for lifecycle parity with the other tools.
+        if (!IsEnabled) return;
+    }
+
+    private void OnGameLoaded()
+    {
+        if (!IsEnabled) return;
+
+        // Player
+        if (IsApplyConfettiChecked) _playerViewModel.SetApplyConfettiCommand.Execute(null);
+        if (IsApplyGachiinChecked) _playerViewModel.SetApplyGachiinCommand.Execute(null);
+        if (IsRemoveConfettiChecked) _playerViewModel.RemoveConfettiCommand.Execute(null);
+        if (IsRemoveGachiinChecked) _playerViewModel.RemoveGachiinCommand.Execute(null);
+
+        // Enemies
+        if (IsSkipDragonPhaseOneChecked) _enemyViewModel.SkipDragonPhaseOneCommand.Execute(null);
+        if (IsTriggerDragonFinalAttackChecked) _enemyViewModel.TriggerDragonFinalAttackCommand.Execute(null);
 
         // Boss Skips
         if (IsSkipGeni3Checked) _enemyViewModel.SkipGeni3Command.Execute(null);
