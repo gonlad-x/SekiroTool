@@ -355,8 +355,12 @@ public class ActivateOnLaunchViewModel : BaseViewModel
             _playerViewModel.IsDamageMultiplierEnabled = true;
         }
 
-        // Target
-        if (IsEnableTargetOptionsChecked) _targetViewModel.IsTargetOptionsEnabled = true;
+        // New Game Cycle
+        // Must be primed here (State.AppStart) rather than on State.GameStart: PlayerViewModel's own
+        // OnGameStart handler reads IsAutoSetNewGameSevenEnabled on that same event, and subscribes to
+        // it before ActivateOnLaunchViewModel does, so setting the flag on GameStart would always run
+        // one publish too late to be read.
+        if (IsAutoSetNewGame7Checked) _playerViewModel.IsAutoSetNewGameSevenEnabled = true;
     }
 
     private void OnGameAttached()
@@ -369,13 +373,14 @@ public class ActivateOnLaunchViewModel : BaseViewModel
     private void OnGameLoaded()
     {
         if (!IsEnabled) return;
+
+        // Target
+        if (IsEnableTargetOptionsChecked) _targetViewModel.IsTargetOptionsEnabled = true;
     }
 
     private async void OnNewGameStart()
     {
         if (!IsEnabled) return;
-
-        if (IsAutoSetNewGame7Checked) _playerViewModel.IsAutoSetNewGameSevenEnabled = true;
 
         if (IsDemonBellOnChecked) _eventViewModel.SetDemonBellCommand.Execute(true);
         if (IsDemonBellOffChecked) _eventViewModel.SetDemonBellCommand.Execute(false);
