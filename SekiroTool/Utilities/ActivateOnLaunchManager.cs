@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace SekiroTool.Utilities;
@@ -32,6 +33,20 @@ public class ActivateOnLaunchManager
     public void SetInt(string actionId, int value)
     {
         _values[actionId] = value.ToString();
+        Save();
+    }
+
+    public double GetDouble(string actionId, double defaultValue = 0)
+    {
+        return _values.TryGetValue(actionId, out var v) &&
+               double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var d)
+            ? d
+            : defaultValue;
+    }
+
+    public void SetDouble(string actionId, double value)
+    {
+        _values[actionId] = value.ToString(CultureInfo.InvariantCulture);
         Save();
     }
 

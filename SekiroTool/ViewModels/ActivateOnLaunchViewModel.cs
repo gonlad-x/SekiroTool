@@ -51,47 +51,25 @@ public class ActivateOnLaunchViewModel : BaseViewModel
     private void Set(string id, bool value) => _aol.SetBool(id, value);
 
     // Player
-    private bool _isApplyConfettiChecked;
+    private bool _isInfiniteConfettiChecked;
 
-    public bool IsApplyConfettiChecked
+    public bool IsInfiniteConfettiChecked
     {
-        get => _isApplyConfettiChecked;
+        get => _isInfiniteConfettiChecked;
         set
         {
-            if (SetProperty(ref _isApplyConfettiChecked, value)) Set(nameof(IsApplyConfettiChecked), value);
+            if (SetProperty(ref _isInfiniteConfettiChecked, value)) Set(nameof(IsInfiniteConfettiChecked), value);
         }
     }
 
-    private bool _isApplyGachiinChecked;
+    private bool _isInfiniteGachiinChecked;
 
-    public bool IsApplyGachiinChecked
+    public bool IsInfiniteGachiinChecked
     {
-        get => _isApplyGachiinChecked;
+        get => _isInfiniteGachiinChecked;
         set
         {
-            if (SetProperty(ref _isApplyGachiinChecked, value)) Set(nameof(IsApplyGachiinChecked), value);
-        }
-    }
-
-    private bool _isRemoveConfettiChecked;
-
-    public bool IsRemoveConfettiChecked
-    {
-        get => _isRemoveConfettiChecked;
-        set
-        {
-            if (SetProperty(ref _isRemoveConfettiChecked, value)) Set(nameof(IsRemoveConfettiChecked), value);
-        }
-    }
-
-    private bool _isRemoveGachiinChecked;
-
-    public bool IsRemoveGachiinChecked
-    {
-        get => _isRemoveGachiinChecked;
-        set
-        {
-            if (SetProperty(ref _isRemoveGachiinChecked, value)) Set(nameof(IsRemoveGachiinChecked), value);
+            if (SetProperty(ref _isInfiniteGachiinChecked, value)) Set(nameof(IsInfiniteGachiinChecked), value);
         }
     }
 
@@ -216,30 +194,6 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         }
     }
 
-    private bool _isIncreaseDamageMultiplierChecked;
-
-    public bool IsIncreaseDamageMultiplierChecked
-    {
-        get => _isIncreaseDamageMultiplierChecked;
-        set
-        {
-            if (SetProperty(ref _isIncreaseDamageMultiplierChecked, value))
-                Set(nameof(IsIncreaseDamageMultiplierChecked), value);
-        }
-    }
-
-    private bool _isDecreaseDamageMultiplierChecked;
-
-    public bool IsDecreaseDamageMultiplierChecked
-    {
-        get => _isDecreaseDamageMultiplierChecked;
-        set
-        {
-            if (SetProperty(ref _isDecreaseDamageMultiplierChecked, value))
-                Set(nameof(IsDecreaseDamageMultiplierChecked), value);
-        }
-    }
-
     private bool _isToggleDamageMultiplierChecked;
 
     public bool IsToggleDamageMultiplierChecked
@@ -249,6 +203,18 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         {
             if (SetProperty(ref _isToggleDamageMultiplierChecked, value))
                 Set(nameof(IsToggleDamageMultiplierChecked), value);
+        }
+    }
+
+    private double _damageMultiplierValue;
+
+    public double DamageMultiplierValue
+    {
+        get => _damageMultiplierValue;
+        set
+        {
+            if (SetProperty(ref _damageMultiplierValue, value))
+                _aol.SetDouble(nameof(DamageMultiplierValue), value);
         }
     }
 
@@ -405,10 +371,8 @@ public class ActivateOnLaunchViewModel : BaseViewModel
 
     private void RegisterActions()
     {
-        _isApplyConfettiChecked = Get(nameof(IsApplyConfettiChecked));
-        _isApplyGachiinChecked = Get(nameof(IsApplyGachiinChecked));
-        _isRemoveConfettiChecked = Get(nameof(IsRemoveConfettiChecked));
-        _isRemoveGachiinChecked = Get(nameof(IsRemoveGachiinChecked));
+        _isInfiniteConfettiChecked = Get(nameof(IsInfiniteConfettiChecked));
+        _isInfiniteGachiinChecked = Get(nameof(IsInfiniteGachiinChecked));
         _isOneShotHealthChecked = Get(nameof(IsOneShotHealthChecked));
         _isOneShotPostureChecked = Get(nameof(IsOneShotPostureChecked));
         _isNoGoodsConsumeChecked = Get(nameof(IsNoGoodsConsumeChecked));
@@ -420,9 +384,8 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         _isNoDeathChecked = Get(nameof(IsNoDeathChecked));
         _isNoDeathExKillboxChecked = Get(nameof(IsNoDeathExKillboxChecked));
         _isNoDamageChecked = Get(nameof(IsNoDamageChecked));
-        _isIncreaseDamageMultiplierChecked = Get(nameof(IsIncreaseDamageMultiplierChecked));
-        _isDecreaseDamageMultiplierChecked = Get(nameof(IsDecreaseDamageMultiplierChecked));
         _isToggleDamageMultiplierChecked = Get(nameof(IsToggleDamageMultiplierChecked));
+        _damageMultiplierValue = _aol.GetDouble(nameof(DamageMultiplierValue), defaultValue: 1.0);
 
         _isSkipDragonPhaseOneChecked = Get(nameof(IsSkipDragonPhaseOneChecked));
         _isTriggerDragonFinalAttackChecked = Get(nameof(IsTriggerDragonFinalAttackChecked));
@@ -447,6 +410,8 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         if (!IsEnabled) return;
 
         // Player
+        if (IsInfiniteConfettiChecked) _playerViewModel.IsConfettiFlagEnabled = true;
+        if (IsInfiniteGachiinChecked) _playerViewModel.IsGachiinFlagEnabled = true;
         if (IsOneShotHealthChecked) _playerViewModel.IsOneShotEnabled = true;
         if (IsOneShotPostureChecked) _playerViewModel.IsOneShotPostureEnabled = true;
         if (IsNoGoodsConsumeChecked) _playerViewModel.IsNoGoodsConsumeEnabled = true;
@@ -458,9 +423,11 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         if (IsNoDeathChecked) _playerViewModel.IsNoDeathEnabled = true;
         if (IsNoDeathExKillboxChecked) _playerViewModel.IsNoDeathEnabledWithoutKillbox = true;
         if (IsNoDamageChecked) _playerViewModel.IsNoDamageEnabled = true;
-        if (IsIncreaseDamageMultiplierChecked) _playerViewModel.DamageMultiplier += 0.1;
-        if (IsDecreaseDamageMultiplierChecked) _playerViewModel.DamageMultiplier -= 0.1;
-        if (IsToggleDamageMultiplierChecked) _playerViewModel.IsDamageMultiplierEnabled = true;
+        if (IsToggleDamageMultiplierChecked)
+        {
+            _playerViewModel.DamageMultiplier = DamageMultiplierValue;
+            _playerViewModel.IsDamageMultiplierEnabled = true;
+        }
 
         // Enemies
         if (IsNoButterflySummonsChecked) _enemyViewModel.IsNoButterflySummonsEnabled = true;
@@ -480,12 +447,6 @@ public class ActivateOnLaunchViewModel : BaseViewModel
     private void OnGameLoaded()
     {
         if (!IsEnabled) return;
-
-        // Player
-        if (IsApplyConfettiChecked) _playerViewModel.SetApplyConfettiCommand.Execute(null);
-        if (IsApplyGachiinChecked) _playerViewModel.SetApplyGachiinCommand.Execute(null);
-        if (IsRemoveConfettiChecked) _playerViewModel.RemoveConfettiCommand.Execute(null);
-        if (IsRemoveGachiinChecked) _playerViewModel.RemoveGachiinCommand.Execute(null);
 
         // Enemies
         if (IsSkipDragonPhaseOneChecked) _enemyViewModel.SkipDragonPhaseOneCommand.Execute(null);

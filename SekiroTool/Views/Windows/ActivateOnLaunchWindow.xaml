@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Activate On Launch"
         WindowStartupLocation="CenterOwner"
@@ -115,10 +116,8 @@
                                     <TextBlock Style="{StaticResource InfoBubbleTextStyle}" />
                                 </Border>
                             </StackPanel>
-                            <CheckBox Content="Apply Confetti" Margin="0,0,0,4" IsChecked="{Binding IsApplyConfettiChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Apply Gachiin" Margin="0,0,0,4" IsChecked="{Binding IsApplyGachiinChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Remove Confetti" Margin="0,0,0,4" IsChecked="{Binding IsRemoveConfettiChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Remove Gachiin" Margin="0,0,0,4" IsChecked="{Binding IsRemoveGachiinChecked}" IsEnabled="{Binding IsEnabled}" />
+                            <CheckBox Content="Infinite Confetti" Margin="0,0,0,4" IsChecked="{Binding IsInfiniteConfettiChecked}" IsEnabled="{Binding IsEnabled}" />
+                            <CheckBox Content="Infinite Gachiin" Margin="0,0,0,4" IsChecked="{Binding IsInfiniteGachiinChecked}" IsEnabled="{Binding IsEnabled}" />
                             <CheckBox Content="One Shot Health" Margin="0,0,0,4" IsChecked="{Binding IsOneShotHealthChecked}" IsEnabled="{Binding IsEnabled}" />
                             <CheckBox Content="One Shot Posture" Margin="0,0,0,4" IsChecked="{Binding IsOneShotPostureChecked}" IsEnabled="{Binding IsEnabled}" />
                             <CheckBox Content="No Goods Consume" Margin="0,0,0,4" IsChecked="{Binding IsNoGoodsConsumeChecked}" IsEnabled="{Binding IsEnabled}" />
@@ -130,9 +129,19 @@
                             <CheckBox Content="No Death" Margin="0,0,0,4" IsChecked="{Binding IsNoDeathChecked}" IsEnabled="{Binding IsEnabled}" />
                             <CheckBox Content="No Death (Yes Killbox)" Margin="0,0,0,4" IsChecked="{Binding IsNoDeathExKillboxChecked}" IsEnabled="{Binding IsEnabled}" />
                             <CheckBox Content="No Damage" Margin="0,0,0,4" IsChecked="{Binding IsNoDamageChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Increase Damage Multiplier" Margin="0,0,0,4" IsChecked="{Binding IsIncreaseDamageMultiplierChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Decrease Damage Multiplier" Margin="0,0,0,4" IsChecked="{Binding IsDecreaseDamageMultiplierChecked}" IsEnabled="{Binding IsEnabled}" />
-                            <CheckBox Content="Toggle Damage Multiplier" Margin="0,0,0,4" IsChecked="{Binding IsToggleDamageMultiplierChecked}" IsEnabled="{Binding IsEnabled}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <CheckBox Content="Damage Multiplier:" IsChecked="{Binding IsToggleDamageMultiplierChecked}" IsEnabled="{Binding IsEnabled}" VerticalAlignment="Center" />
+                                <xctk:DoubleUpDown Margin="8,0,0,0"
+                                                    Width="90"
+                                                    Value="{Binding DamageMultiplierValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Minimum="0"
+                                                    Maximum="100"
+                                                    Increment="0.1"
+                                                    FormatString="F1"
+                                                    TextAlignment="Center"
+                                                    IsEnabled="{Binding IsEnabled}"
+                                                    BorderBrush="#3F3F46" />
+                            </StackPanel>
 
                             <!-- Enemies -->
                             <StackPanel Orientation="Horizontal">
