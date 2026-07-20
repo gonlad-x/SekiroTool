@@ -432,9 +432,6 @@ public class ActivateOnLaunchViewModel : BaseViewModel
         // Enemies
         if (IsNoButterflySummonsChecked) _enemyViewModel.IsNoButterflySummonsEnabled = true;
         if (IsSnakeIntroLoopChecked) _enemyViewModel.IsSnakeIntroLoopEnabled = true;
-
-        // Target
-        if (IsEnableTargetOptionsChecked) _targetViewModel.IsTargetOptionsEnabled = true;
     }
 
     private void OnGameAttached()
@@ -447,6 +444,9 @@ public class ActivateOnLaunchViewModel : BaseViewModel
     private void OnGameLoaded()
     {
         if (!IsEnabled) return;
+
+        // Target
+        if (IsEnableTargetOptionsChecked) _targetViewModel.IsTargetOptionsEnabled = true;
 
         // Enemies
         if (IsSkipDragonPhaseOneChecked) _enemyViewModel.SkipDragonPhaseOneCommand.Execute(null);

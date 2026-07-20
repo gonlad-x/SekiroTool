@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         _memoryService = new MemoryService();
+        _memoryService.StartAutoAttach();
 
         InitializeComponent();
 
@@ -106,13 +107,7 @@ public partial class MainWindow : Window
 
         settingsViewModel.ApplyStartUpOptions();
 
-        // Published before the process is ever attached (StartAutoAttach runs after this), so
-        // Activate On Launch's AppStart handlers (e.g. Enable Target Options, which triggers
-        // ChangeIdolIcon's AllocateAndExecute shellcode) never run against a process whose
-        // handle/offsets/code cave haven't been resolved yet.
         _stateService.Publish(State.AppStart);
-
-        _memoryService.StartAutoAttach();
 
         Closing += MainWindow_Closing;
 
