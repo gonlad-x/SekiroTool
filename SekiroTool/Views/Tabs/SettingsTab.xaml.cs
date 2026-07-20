@@ -2,18 +2,30 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using SekiroTool.ViewModels;
+using SekiroTool.Views.Windows;
 
 namespace SekiroTool.Views.Tabs;
 
 public partial class SettingsTab : UserControl
 {
     private readonly SettingsViewModel _settingsViewModel;
-        
-    public SettingsTab(SettingsViewModel settingsViewModel)
+    private readonly ActivateOnLaunchViewModel _activateOnLaunchViewModel;
+
+    public SettingsTab(SettingsViewModel settingsViewModel, ActivateOnLaunchViewModel activateOnLaunchViewModel)
     {
         DataContext = settingsViewModel;
         _settingsViewModel = settingsViewModel;
+        _activateOnLaunchViewModel = activateOnLaunchViewModel;
         InitializeComponent();
+    }
+
+    private void ActivateOnLaunchButton_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new ActivateOnLaunchWindow(_activateOnLaunchViewModel)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        window.ShowDialog();
     }
     
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
